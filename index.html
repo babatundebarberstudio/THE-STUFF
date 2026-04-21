@@ -391,11 +391,7 @@
           <h2>Payment Confirmed</h2>
           <p id="checkoutSuccessText" class="section-intro"></p>
           <div id="checkoutSuccessMeta" class="checkout-success-meta hidden"></div>
-          <div id="checkoutReceiptActions" class="checkout-receipt-actions hidden">
-            <button id="downloadReceiptButton" class="btn btn-secondary" type="button">Download Receipt</button>
-            <button id="printReceiptButton" class="btn btn-secondary" type="button">Print Receipt</button>
-          </div>
-          <button id="checkoutSuccessContinue" class="btn btn-primary" type="button">Continue Shopping</button>
+          <button id="checkoutSuccessContinue" class="btn btn-primary" type="button">Back to Site</button>
         </div>
       </div>
     </section>
@@ -1204,7 +1200,12 @@
           const variantText = item.color ? " (" + item.color + ")" : "";
           return (
             "<div class=\"cart-item-row\">" +
-            "<div><h4>" + item.name + variantText + "</h4><p>Qty: " + item.quantity + "</p></div>" +
+            "<div><h4>" + item.name + variantText + "</h4>" +
+            "<div class=\"cart-qty-controls\">" +
+            "<button type=\"button\" class=\"cart-qty-btn\" data-qty-index=\"" + index + "\" data-qty-delta=\"-1\" aria-label=\"Decrease quantity\">-</button>" +
+            "<input class=\"cart-qty-input\" data-qty-input-index=\"" + index + "\" type=\"number\" min=\"1\" value=\"" + item.quantity + "\" aria-label=\"Quantity for " + item.name + variantText + "\">" +
+            "<button type=\"button\" class=\"cart-qty-btn\" data-qty-index=\"" + index + "\" data-qty-delta=\"1\" aria-label=\"Increase quantity\">+</button>" +
+            "</div></div>" +
             "<div class=\"cart-item-actions\">" +
             "<strong>" + (item.price === null ? "Unknown" : "$" + (item.price * item.quantity).toFixed(2)) + "</strong>" +
             "<button type=\"button\" class=\"cart-remove-btn\" data-remove-index=\"" + index + "\" aria-label=\"Remove " + item.name + variantText + " from cart\">Remove</button>" +
@@ -1218,6 +1219,14 @@
     function removeCartItem(index) {
       if (Number.isNaN(index) || index < 0 || index >= cart.length) return;
       cart.splice(index, 1);
+      persistCart();
+      renderAllCartUI();
+    }
+
+    function updateCartItemQuantity(index, nextQuantity) {
+      if (Number.isNaN(index) || index < 0 || index >= cart.length) return;
+      const qty = Math.max(1, parseInt(nextQuantity, 10) || 1);
+      cart[index].quantity = qty;
       persistCart();
       renderAllCartUI();
     }
@@ -1808,16 +1817,44 @@
     closeCartButton.addEventListener("click", closeCart);
     cartOverlay.addEventListener("click", closeCart);
     cartItems.addEventListener("click", (event) => {
+      const qtyButton = event.target.closest(".cart-qty-btn");
+      if (qtyButton) {
+        const index = parseInt(qtyButton.getAttribute("data-qty-index"), 10);
+        const delta = parseInt(qtyButton.getAttribute("data-qty-delta"), 10) || 0;
+        const current = cart[index]?.quantity || 1;
+        updateCartItemQuantity(index, current + delta);
+        return;
+      }
       const button = event.target.closest(".cart-remove-btn");
       if (!button) return;
       const index = parseInt(button.getAttribute("data-remove-index"), 10);
       removeCartItem(index);
     });
+    cartItems.addEventListener("change", (event) => {
+      const input = event.target.closest(".cart-qty-input");
+      if (!input) return;
+      const index = parseInt(input.getAttribute("data-qty-input-index"), 10);
+      updateCartItemQuantity(index, input.value);
+    });
     checkoutItems.addEventListener("click", (event) => {
+      const qtyButton = event.target.closest(".cart-qty-btn");
+      if (qtyButton) {
+        const index = parseInt(qtyButton.getAttribute("data-qty-index"), 10);
+        const delta = parseInt(qtyButton.getAttribute("data-qty-delta"), 10) || 0;
+        const current = cart[index]?.quantity || 1;
+        updateCartItemQuantity(index, current + delta);
+        return;
+      }
       const button = event.target.closest(".cart-remove-btn");
       if (!button) return;
       const index = parseInt(button.getAttribute("data-remove-index"), 10);
       removeCartItem(index);
+    });
+    checkoutItems.addEventListener("change", (event) => {
+      const input = event.target.closest(".cart-qty-input");
+      if (!input) return;
+      const index = parseInt(input.getAttribute("data-qty-input-index"), 10);
+      updateCartItemQuantity(index, input.value);
     });
     checkoutButton.addEventListener("click", () => {
       closeCart();
@@ -1850,6 +1887,10 @@
     });
     if (checkoutSuccessContinue) {
       checkoutSuccessContinue.addEventListener("click", () => {
+        cart.length = 0;
+        clearAppliedPromo();
+        persistCart();
+        renderAllCartUI();
         window.location.href = "#shop-all";
       });
     }
@@ -1925,7 +1966,7 @@
           body: JSON.stringify(payload)
         });
         if (!response.ok) {
-          let msg = "Could not send your message right now.";
+          let msg = "Could not submit contact message. Please try again or email NoireHairCare@gmail.com.";
           try {
             const data = await response.json();
             if (data?.error) msg = data.error;

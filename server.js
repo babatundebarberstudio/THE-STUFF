@@ -616,6 +616,11 @@ app.post("/api/contact", async (req, res) => {
     });
     if (error) {
       console.error("Failed to store contact message:", error);
+      if (error.code === "42P01") {
+        return res.status(500).json({
+          error: "Contact form setup is incomplete. Run supabase-contact-messages.sql, then try again."
+        });
+      }
       return res.status(500).json({ error: "Could not submit contact message." });
     }
 
