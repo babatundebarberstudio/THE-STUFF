@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Noire | Order Confirmation</title>
+  <style>
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(180deg, #fff7fa 0%, #f5f4ff 100%);
+      color: #1f1f1f;
+      padding: 24px;
+    }
+    .card {
+      width: 100%;
+      max-width: 680px;
+      background: #fff;
+      border: 1px solid #ece7ea;
+      border-radius: 16px;
+      padding: 28px;
+      box-shadow: 0 16px 40px rgba(16, 16, 16, 0.08);
+    }
+    h1 {
+      margin: 0 0 10px;
+      font-size: 1.85rem;
+      letter-spacing: -0.02em;
+    }
+    p {
+      margin: 6px 0;
+      line-height: 1.45;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: #effaf2;
+      color: #0f7a3f;
+      border: 1px solid #caebd5;
+      font-size: 0.9rem;
+      font-weight: 700;
+      border-radius: 999px;
+      padding: 6px 12px;
+      margin-bottom: 14px;
+    }
+    .grid {
+      margin-top: 18px;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+    .panel {
+      border: 1px solid #ece7ea;
+      border-radius: 12px;
+      padding: 12px;
+      background: #fcfbfd;
+    }
+    .panel h2 {
+      margin: 0 0 8px;
+      font-size: 1rem;
+    }
+    .strong {
+      font-weight: 700;
+    }
+    .muted {
+      color: #555;
+    }
+    .ok {
+      color: #0b7a3b;
+      font-weight: 700;
+    }
+    .warn {
+      color: #8a4f00;
+      font-weight: 700;
+    }
+    .error {
+      color: #a11010;
+      font-weight: 700;
+    }
+    .actions {
+      margin-top: 16px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .button {
+      display: inline-block;
+      text-decoration: none;
+      border-radius: 10px;
+      padding: 10px 14px;
+      border: 1px solid #111;
+      color: #111;
+      font-weight: 600;
+    }
+    .button.primary {
+      background: #111;
+      color: #fff;
+    }
+    @media (max-width: 700px) {
+      .card {
+        padding: 22px;
+      }
+      .grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="card">
+    <div class="badge">Payment Received</div>
+    <h1>Thank you for your purchase</h1>
+    <p id="statusText" class="muted">Finalizing your order now...</p>
+    <p id="orderText" class="muted strong"></p>
+    <div class="grid">
+      <section class="panel">
+        <h2>Estimated Delivery</h2>
+        <p id="deliveryWindowText" class="muted">Calculating your 4-7 business day window...</p>
+        <p class="muted">Business days only (Monday-Friday).</p>
+      </section>
+      <section class="panel">
+        <h2>Need Help?</h2>
+        <p class="muted">Text or call our business line:</p>
+        <p><a id="businessLineLink" class="strong" href="tel:+17087217981">+1 (708) 721-7981</a></p>
+      </section>
+    </div>
+    <div class="actions">
+      <a class="button primary" href="/index.html#shop-all">Continue Shopping</a>
+      <a class="button" href="/index.html#checkout">Back to Checkout</a>
+    </div>
+  </main>
+
+  <script>
+    (function confirmOrder() {
+      const statusEl = document.getElementById("statusText");
+      const orderEl = document.getElementById("orderText");
+      const params = new URLSearchParams(window.location.search);
+      const orderNumber = params.get("order") || "";
+      const sessionId = params.get("session_id") || "";
+      const deliveryWindowText = document.getElementById("deliveryWindowText");
+      const businessLineLink = document.getElementById("businessLineLink");
+      const apiBase = "http://localhost:4242";
+      const businessLineDisplay = "+1 (708) 721-7981";
+      const businessLineDial = "+17087217981";
+
+      if (businessLineLink) {
+        businessLineLink.textContent = businessLineDisplay;
+        businessLineLink.href = "tel:" + businessLineDial;
+      }
+
+      function formatDate(dateValue) {
+        return dateValue.toLocaleDateString(undefined, {
+          weekday: "short",
+          month: "short",
+          day: "numeric"
+        });
+      }
+
+      function addBusinessDays(startDate, businessDays) {
+        const dateValue = new Date(startDate);
+        let added = 0;
+        while (added < businessDays) {
+          dateValue.setDate(dateValue.getDate() + 1);
+          const day = dateValue.getDay();
+          if (day !== 0 && day !== 6) {
+            added += 1;
+          }
+        }
+        return dateValue;
+      }
+
+      function renderDeliveryWindow() {
+        const today = new Date();
+        const earliest = addBusinessDays(today, 4);
+        const latest = addBusinessDays(today, 7);
+        deliveryWindowText.textContent = formatDate(earliest) + " - " + formatDate(latest);
+      }
+      renderDeliveryWindow();
+
+      if (orderNumber) {
+        orderEl.textContent = "Order: " + orderNumber;
+      }
+
+      if (!sessionId) {
+        if (!orderNumber) {
+          statusEl.className = "warn";
+          statusEl.textContent = "Payment received. We are verifying your order details.";
+          return;
+        }
+        fetch(apiBase + "/api/confirm-order-number", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ orderNumber })
+        })
+          .then((response) => {
+            if (!response.ok) throw new Error("Fallback confirm failed");
+            statusEl.className = "ok";
+            statusEl.textContent = "Payment confirmed. Your order is marked paid.";
+          })
+          .catch(() => {
+            statusEl.className = "warn";
+            statusEl.textContent = "Payment received. We are verifying your order details.";
+          });
+        return;
+      }
+
+      let attempts = 0;
+      const maxAttempts = 12;
+      let fallbackTriggered = false;
+
+      async function fallbackConfirmByOrderNumber() {
+        if (!orderNumber || fallbackTriggered) return false;
+        fallbackTriggered = true;
+        const fallbackResponse = await fetch(apiBase + "/api/confirm-order-number", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ orderNumber })
+        });
+        if (!fallbackResponse.ok) {
+          return false;
+        }
+        statusEl.className = "ok";
+        statusEl.textContent = "Payment confirmed. Your order is marked paid.";
+        return true;
+      }
+
+      async function confirmOnce() {
+        attempts += 1;
+        statusEl.className = "muted";
+        statusEl.textContent = "Finalizing your order... (" + attempts + "/" + maxAttempts + ")";
+        const response = await fetch(apiBase + "/api/confirm-checkout-session", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ sessionId })
+        });
+        if (!response.ok) {
+          throw new Error("Confirmation request failed");
+        }
+        return await response.json();
+      }
+
+      async function confirmWithRetry() {
+        try {
+          const data = await confirmOnce();
+          const isConfirmed = data.paymentStatus === "paid" || data.paymentStatus === "no_payment_required";
+          if (isConfirmed) {
+            statusEl.className = "ok";
+            statusEl.textContent = "Payment confirmed. Your order is marked paid.";
+            return;
+          }
+
+          // If Stripe session confirmation is delayed, use order number fallback immediately.
+          const fallbackSucceeded = await fallbackConfirmByOrderNumber();
+          if (fallbackSucceeded) {
+            return;
+          }
+
+          if (attempts < maxAttempts) {
+            statusEl.className = "warn";
+            statusEl.textContent = "Order received. Waiting for payment confirmation...";
+            setTimeout(confirmWithRetry, 2500);
+            return;
+          }
+
+          await fallbackConfirmByOrderNumber();
+          statusEl.className = "warn";
+          statusEl.textContent = "Order received, but payment confirmation is still pending. Please refresh this page in 1 minute.";
+        } catch (_error) {
+          const fallbackSucceeded = await fallbackConfirmByOrderNumber();
+          if (fallbackSucceeded) {
+            return;
+          }
+          if (attempts < maxAttempts) {
+            setTimeout(confirmWithRetry, 2500);
+            return;
+          }
+          statusEl.className = "error";
+          statusEl.textContent = "Payment return received, but confirmation is delayed. Please refresh in a minute.";
+        }
+      }
+
+      confirmWithRetry();
+    })();
+  </script>
+</body>
+</html>
