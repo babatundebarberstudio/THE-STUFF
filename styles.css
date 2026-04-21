@@ -57,6 +57,14 @@ body.launch-locked .site-footer {
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
 }
 
+.launch-logo {
+  display: block;
+  width: min(150px, 42vw);
+  height: auto;
+  margin: 0 auto 8px;
+  object-fit: contain;
+}
+
 .launch-eyebrow {
   margin: 0;
   color: #7a6757;
