@@ -48,12 +48,21 @@ app.use(cors({
   origin(origin, callback) {
     if (!origin || origin === "null") return callback(null, true);
     const isLocalhostOrigin = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i.test(origin);
-    if (origin === FRONTEND_URL || isLocalhostOrigin) {
+    const isRenderPreview = /^https:\/\/[a-z0-9-]+\.onrender\.com$/i.test(origin);
+    if (origin === FRONTEND_URL || isLocalhostOrigin || isRenderPreview) {
       return callback(null, true);
     }
     return callback(new Error(`CORS blocked for origin: ${origin}`));
   }
 }));
+
+app.use((error, _req, res, next) => {
+  if (!error) return next();
+  if (error.message && error.message.startsWith("CORS blocked")) {
+    return res.status(403).json({ error: error.message });
+  }
+  return next(error);
+});
 
 app.post("/api/stripe/webhook", express.raw({ type: "application/json" }), async (req, res) => {
   if (!STRIPE_WEBHOOK_SECRET) {
