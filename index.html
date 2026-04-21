@@ -19,6 +19,30 @@
   <link rel="stylesheet" href="styles.css">
 </head>
 <body class="intro-text-hidden">
+  <div id="launchGate" class="launch-gate hidden" role="dialog" aria-modal="true" aria-labelledby="launchGateTitle">
+    <div class="launch-gate-card">
+      <p class="launch-eyebrow">Noire Hair Company LLC</p>
+      <h1 id="launchGateTitle">Launch Day Countdown</h1>
+      <p class="launch-gate-copy">We are almost live. The full site opens in:</p>
+      <p id="launchCountdown" class="launch-countdown">Loading countdown...</p>
+
+      <div class="launch-event-card">
+        <h2>See us in person on launch day</h2>
+        <p class="launch-event-name">Intercollegiate Black Cookout</p>
+        <p class="launch-event-address">70 Arts Circle Dr<br>Evanston, IL 60208</p>
+      </div>
+
+      <div class="launch-bypass">
+        <input id="launchBypassInput" type="text" placeholder="Enter prerelease code" autocomplete="off" maxlength="64">
+        <button id="launchBypassButton" type="button" class="btn btn-primary">Enter</button>
+      </div>
+      <p id="launchBypassMessage" class="order-message hidden"></p>
+      <div class="launch-socials">
+        <a href="https://www.instagram.com/noirecurls/" target="_blank" rel="noopener noreferrer">Instagram @noirecurls</a>
+        <a href="https://www.tiktok.com/@noirehaircare" target="_blank" rel="noopener noreferrer">TikTok @noirehaircare</a>
+      </div>
+    </div>
+  </div>
   <div class="announcement-bar" aria-label="Launch day sale announcement">
     <div class="announcement-track">
       <span>Launch Day Sale: 30% off your first order over $30 with code: LAUNCHDAY</span>
@@ -129,7 +153,7 @@
               >
               <h3>Scalp/Growth Oil</h3>
             </a>
-            <p class="product-price">Price: $0.00</p>
+            <p class="product-price">Price: $9.99</p>
             <p class="shipping-note">Shipping: 4-7 business days</p>
             <a class="product-link" href="#product/scalp-growth-oil">View Product</a>
           </article>
@@ -195,7 +219,7 @@
               <img class="product-thumb" src="assets/Scalp Growth Oil Main.png" alt="Scalp/Growth Oil">
               <h3>Scalp/Growth Oil</h3>
             </a>
-            <p class="product-price">Price: $0.00</p>
+            <p class="product-price">Price: $9.99</p>
             <p class="shipping-note">Shipping: 4-7 business days</p>
             <a class="product-link" href="#product/scalp-growth-oil">View Product</a>
           </article>
@@ -548,7 +572,7 @@
       "scalp-growth-oil": {
         slug: "scalp-growth-oil",
         name: "Scalp/Growth Oil",
-        price: 0.00,
+        price: 9.99,
         description: "A targeted scalp and growth oil made to nourish the scalp and support healthier-looking hair over time without feeling heavy.",
         highlights: [
           "Supports scalp health and hair growth",
@@ -694,6 +718,9 @@
     let activeGalleryIndex = 0;
     const CART_STORAGE_KEY = "noire_cart_v1";
     const RETURN_HASH_KEY = "noire_return_hash";
+    const LAUNCH_BYPASS_STORAGE_KEY = "noire_launch_bypass_v1";
+    const LAUNCH_BYPASS_CODE = "NOIREADMINPRERELEASE";
+    const LAUNCH_TARGET_MS = new Date("2026-04-21T01:27:00-05:00").getTime();
     let appliedPromo = null;
     let authMode = "signin";
     let openAuthForPromoGate = false;
@@ -766,6 +793,11 @@
     const mobileMenu = document.getElementById("mobileMenu");
     const mobileAccountButton = document.getElementById("mobileAccountButton");
     const mobileCartButton = document.getElementById("mobileCartButton");
+    const launchGate = document.getElementById("launchGate");
+    const launchCountdown = document.getElementById("launchCountdown");
+    const launchBypassInput = document.getElementById("launchBypassInput");
+    const launchBypassButton = document.getElementById("launchBypassButton");
+    const launchBypassMessage = document.getElementById("launchBypassMessage");
 
     const detailName = document.getElementById("detailName");
     const detailDescription = document.getElementById("detailDescription");
@@ -1277,6 +1309,94 @@
       promoMessage.textContent = "";
       promoMessage.classList.add("hidden");
       promoMessage.classList.remove("is-error");
+    }
+
+    function isLaunchBypassEnabled() {
+      try {
+        return localStorage.getItem(LAUNCH_BYPASS_STORAGE_KEY) === "1";
+      } catch (_e) {
+        return false;
+      }
+    }
+
+    function setLaunchBypassEnabled(value) {
+      try {
+        if (value) {
+          localStorage.setItem(LAUNCH_BYPASS_STORAGE_KEY, "1");
+        } else {
+          localStorage.removeItem(LAUNCH_BYPASS_STORAGE_KEY);
+        }
+      } catch (_e) {
+        // ignore storage errors
+      }
+    }
+
+    function isLaunchUnlocked() {
+      return Date.now() >= LAUNCH_TARGET_MS || isLaunchBypassEnabled();
+    }
+
+    function formatLaunchCountdown(msLeft) {
+      const totalSeconds = Math.max(0, Math.floor(msLeft / 1000));
+      const days = Math.floor(totalSeconds / 86400);
+      const hours = Math.floor((totalSeconds % 86400) / 3600);
+      const minutes = Math.floor((totalSeconds % 3600) / 60);
+      const seconds = totalSeconds % 60;
+      const dayPart = days > 0 ? `${days}d ` : "";
+      return `${dayPart}${String(hours).padStart(2, "0")}h ${String(minutes).padStart(2, "0")}m ${String(seconds).padStart(2, "0")}s`;
+    }
+
+    function showLaunchBypassMessage(text, isError) {
+      if (!launchBypassMessage) return;
+      launchBypassMessage.textContent = text;
+      launchBypassMessage.classList.remove("hidden");
+      launchBypassMessage.classList.toggle("is-error", Boolean(isError));
+    }
+
+    function setLaunchGateVisible(isVisible) {
+      document.body.classList.toggle("launch-locked", isVisible);
+      if (!launchGate) return;
+      launchGate.classList.toggle("hidden", !isVisible);
+    }
+
+    function initLaunchGate() {
+      if (!launchGate || !launchCountdown || !launchBypassInput || !launchBypassButton) return;
+      let timerId = null;
+
+      const refreshGate = () => {
+        if (isLaunchUnlocked()) {
+          setLaunchGateVisible(false);
+          if (timerId) {
+            clearInterval(timerId);
+            timerId = null;
+          }
+          return;
+        }
+        setLaunchGateVisible(true);
+        launchCountdown.textContent = formatLaunchCountdown(LAUNCH_TARGET_MS - Date.now());
+      };
+
+      launchBypassButton.addEventListener("click", () => {
+        const code = launchBypassInput.value.trim();
+        if (code === LAUNCH_BYPASS_CODE) {
+          setLaunchBypassEnabled(true);
+          showLaunchBypassMessage("Bypass accepted. Opening site...", false);
+          refreshGate();
+          return;
+        }
+        showLaunchBypassMessage("Invalid code.", true);
+      });
+
+      launchBypassInput.addEventListener("keydown", (event) => {
+        if (event.key === "Enter") {
+          event.preventDefault();
+          launchBypassButton.click();
+        }
+      });
+
+      refreshGate();
+      if (!isLaunchUnlocked()) {
+        timerId = setInterval(refreshGate, 1000);
+      }
     }
 
     async function applyPromoFromInput() {
@@ -2274,6 +2394,7 @@
       setupScrollReveal();
       renderAllCartUI();
       syncViewFromHash();
+      initLaunchGate();
     }, 1000);
     window.__noirePrimaryBooted = true;
   </script>
