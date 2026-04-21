@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Noire | Healthy Hair, Rooted in Care</title>
+  <title>Noirè</title>
   <link rel="icon" href="/assets/favicon.png?v=2" type="image/png">
   <link rel="shortcut icon" href="/assets/favicon.png?v=2" type="image/png">
   <meta
@@ -58,6 +58,11 @@
         </span>
       </div>
     </div>
+    <nav class="mobile-nav-tabs" aria-label="Mobile quick navigation">
+      <a class="mobile-nav-tab" href="#shop-all">Shop</a>
+      <a class="mobile-nav-tab" href="#our-story">Our Story</a>
+      <a class="mobile-nav-tab" href="#contact-us">Contact Us</a>
+    </nav>
     <div id="mobileMenu" class="mobile-menu hidden">
       <a class="mobile-menu-link" href="#">Home</a>
       <a class="mobile-menu-link" href="#shop-all">Shop</a>
@@ -457,6 +462,7 @@
           <label for="contactMessage">Message</label>
           <textarea id="contactMessage" name="message" rows="5" required></textarea>
           <button type="submit" class="btn btn-primary">Submit</button>
+          <p id="contactFormMessage" class="order-message hidden"></p>
         </form>
       </div>
     </section>
@@ -474,7 +480,7 @@
   <footer class="site-footer">
     <div class="container footer-wrap">
       <div class="footer-brand">
-        <p>&copy; <span id="year"></span> Noire. All rights reserved.</p>
+        <p>&copy; <span id="year"></span> Noire Hair Company LLC. All rights reserved.</p>
         <p>Evanston, Illinois</p>
       </div>
       <div class="footer-socials" aria-label="Social links">
@@ -488,6 +494,8 @@
       <div class="footer-contact">
         <a href="tel:+17087217981">+1 (708) 721-7981</a>
         <a href="mailto:NoireHairCare@gmail.com">NoireHairCare@gmail.com</a>
+        <p>Business Hours (CT): Mon-Fri 9:00 AM - 5:00 PM</p>
+        <p>Sat-Sun: Closed</p>
       </div>
     </div>
   </footer>
@@ -821,6 +829,10 @@
     const closeZoomButton = document.getElementById("closeZoomButton");
     const zoomedImage = document.getElementById("zoomedImage");
     const contactForm = document.getElementById("contactForm");
+    const contactNameInput = document.getElementById("contactName");
+    const contactEmailInput = document.getElementById("contactEmail");
+    const contactMessageInput = document.getElementById("contactMessage");
+    const contactFormMessage = document.getElementById("contactFormMessage");
     const orderForm = document.getElementById("orderForm");
     const orderName = document.getElementById("orderName");
     const orderEmail = document.getElementById("orderEmail");
@@ -1892,10 +1904,47 @@
         }
       });
     });
-    contactForm.addEventListener("submit", (event) => {
+    contactForm.addEventListener("submit", async (event) => {
       event.preventDefault();
-      contactForm.reset();
-      window.location.hash = "#contact-thanks";
+      const submitButton = contactForm.querySelector("button[type=\"submit\"]");
+      if (contactFormMessage) {
+        contactFormMessage.classList.add("hidden");
+        contactFormMessage.classList.remove("is-error");
+        contactFormMessage.textContent = "";
+      }
+      if (submitButton) submitButton.disabled = true;
+      try {
+        const payload = {
+          name: contactNameInput ? contactNameInput.value.trim() : "",
+          email: contactEmailInput ? contactEmailInput.value.trim().toLowerCase() : "",
+          message: contactMessageInput ? contactMessageInput.value.trim() : ""
+        };
+        const response = await fetch(CHECKOUT_API_BASE_URL + "/api/contact", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+        if (!response.ok) {
+          let msg = "Could not send your message right now.";
+          try {
+            const data = await response.json();
+            if (data?.error) msg = data.error;
+          } catch (_err) {
+            // keep default
+          }
+          throw new Error(msg);
+        }
+        contactForm.reset();
+        window.location.hash = "#contact-thanks";
+      } catch (error) {
+        if (contactFormMessage) {
+          contactFormMessage.textContent = error?.message || "Could not send your message right now.";
+          contactFormMessage.classList.remove("hidden");
+          contactFormMessage.classList.add("is-error");
+        }
+      } finally {
+        if (submitButton) submitButton.disabled = false;
+      }
     });
     detailDescriptionToggle.addEventListener("click", () => {
       const isExpanded = detailDescription.classList.toggle("is-expanded");

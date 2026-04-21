@@ -596,6 +596,36 @@ app.post("/api/confirm-order-number", async (req, res) => {
   }
 });
 
+app.post("/api/contact", async (req, res) => {
+  try {
+    const name = String(req.body?.name || "").trim();
+    const email = String(req.body?.email || "").trim().toLowerCase();
+    const message = String(req.body?.message || "").trim();
+
+    if (!name || !email || !message) {
+      return res.status(400).json({ error: "Name, email, and message are required." });
+    }
+    if (message.length < 10) {
+      return res.status(400).json({ error: "Message is too short." });
+    }
+
+    const { error } = await supabaseAdmin.from("contact_messages").insert({
+      name,
+      email,
+      message
+    });
+    if (error) {
+      console.error("Failed to store contact message:", error);
+      return res.status(500).json({ error: "Could not submit contact message." });
+    }
+
+    return res.json({ ok: true });
+  } catch (error) {
+    console.error("Contact submit failed:", error);
+    return res.status(500).json({ error: "Unexpected contact submit failure." });
+  }
+});
+
 app.get("/api/health", (_req, res) => {
   res.json({
     ok: true,

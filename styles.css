@@ -112,6 +112,10 @@ a {
   display: none;
 }
 
+.mobile-nav-tabs {
+  display: none;
+}
+
 .cart-button-wrap {
   position: relative;
   display: inline-flex;
@@ -1358,6 +1362,12 @@ h2 {
   justify-items: end;
 }
 
+.footer-contact p {
+  margin: 0;
+  color: #666;
+  font-size: 0.85rem;
+}
+
 .shop-grid {
   margin-top: 20px;
 }
@@ -1382,6 +1392,24 @@ h2 {
 
   .nav-actions {
     display: none;
+  }
+
+  .mobile-nav-tabs {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+    padding: 0 14px 12px;
+    background: var(--surface-sand);
+    border-top: 1px solid rgba(0, 0, 0, 0.06);
+  }
+
+  .mobile-nav-tab {
+    text-align: center;
+    padding: 9px 8px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.45);
+    font-size: 0.86rem;
+    font-weight: 700;
   }
 
   .mobile-menu.is-open {
