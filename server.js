@@ -18,6 +18,8 @@ const {
   STRIPE_WEBHOOK_SECRET,
   SUPABASE_URL,
   SUPABASE_SERVICE_ROLE_KEY,
+  SUPABASE_ANON_KEY,
+  ADMIN_PROMO_SECRET,
   TELNYX_API_KEY,
   TELNYX_FROM_NUMBER,
   TELNYX_MESSAGING_PROFILE_ID,
@@ -30,6 +32,141 @@ if (!STRIPE_SECRET_KEY || !SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
 
 const stripe = new Stripe(STRIPE_SECRET_KEY);
 const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+
+function createUserSupabaseClient(authHeader) {
+  if (!SUPABASE_ANON_KEY) return null;
+  return createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    global: { headers: { Authorization: authHeader || "" } }
+  });
+}
+
+async function getUserFromRequest(req) {
+  const authHeader = String(req.headers.authorization || "").trim();
+  if (!authHeader.startsWith("Bearer ")) return null;
+  const client = createUserSupabaseClient(authHeader);
+  if (!client) return null;
+  const { data, error } = await client.auth.getUser();
+  if (error || !data?.user) return null;
+  return data.user;
+}
+
+function normalizePromoCode(code) {
+  return String(code || "").trim().toUpperCase();
+}
+
+async function validatePromoForUser(codeRaw, userId) {
+  const code = normalizePromoCode(codeRaw);
+  if (!code) {
+    return { ok: false, error: "Enter a promo code." };
+  }
+  const { data: row, error } = await supabaseAdmin
+    .from("promo_codes")
+    .select("code, percent_off, max_total_redemptions, per_user_limit, active")
+    .eq("code", code)
+    .maybeSingle();
+  if (error) {
+    console.error("promo_codes read failed:", error.message);
+    return { ok: false, error: "Promo validation unavailable." };
+  }
+  if (!row || !row.active) {
+    return { ok: false, error: "Invalid or inactive promo code." };
+  }
+  const { count: globalCount, error: globalErr } = await supabaseAdmin
+    .from("promo_redemptions")
+    .select("id", { count: "exact", head: true })
+    .eq("promo_code", code);
+  if (globalErr) {
+    return { ok: false, error: "Could not validate promo code." };
+  }
+  if (row.max_total_redemptions != null && (globalCount ?? 0) >= row.max_total_redemptions) {
+    return { ok: false, error: "This promo code is no longer available." };
+  }
+  const { count: userCount, error: userErr } = await supabaseAdmin
+    .from("promo_redemptions")
+    .select("id", { count: "exact", head: true })
+    .eq("promo_code", code)
+    .eq("user_id", userId);
+  if (userErr) {
+    return { ok: false, error: "Could not validate promo code." };
+  }
+  const limit = Math.max(1, Number(row.per_user_limit) || 1);
+  if ((userCount ?? 0) >= limit) {
+    return { ok: false, error: "You have already used this promo code." };
+  }
+  return {
+    ok: true,
+    code,
+    percentOff: Math.min(100, Math.max(0, Number(row.percent_off) || 0))
+  };
+}
+
+function buildShippingAddressString(customer) {
+  const single = String(customer.shippingAddress || "").trim();
+  if (single) return single;
+  const line1 = String(customer.addressLine1 || "").trim();
+  const line2 = String(customer.addressLine2 || "").trim();
+  const city = String(customer.city || "").trim();
+  const state = String(customer.state || "").trim();
+  const postal = String(customer.postalCode || "").trim();
+  const country = String(customer.country || "").trim() || "United States";
+  const parts = [line1, line2, [city, state, postal].filter(Boolean).join(", "), country].filter(Boolean);
+  return parts.join("\n");
+}
+
+function computeCartSubtotal(cart) {
+  let subtotal = 0;
+  let hasUnknown = false;
+  for (const item of cart) {
+    const quantity = Math.max(1, Number(item.quantity) || 1);
+    const unitPrice = Number(item.price);
+    if (Number.isNaN(unitPrice) || item.price === null) {
+      hasUnknown = true;
+      break;
+    }
+    subtotal += unitPrice * quantity;
+  }
+  return { subtotal, hasUnknown };
+}
+
+function computeTotalsWithDiscount(cart, discountPercent) {
+  const { subtotal, hasUnknown } = computeCartSubtotal(cart);
+  if (hasUnknown) {
+    return { subtotal: null, tax: null, shipping: null, total: null, hasUnknownPrice: true };
+  }
+  const factor = discountPercent > 0 ? 1 - Math.min(100, discountPercent) / 100 : 1;
+  const discountedSubtotal = subtotal * factor;
+  const tax = discountedSubtotal * 0.08;
+  const shipping = discountedSubtotal > 0 ? 6.99 : 0;
+  return {
+    subtotal: discountedSubtotal,
+    tax,
+    shipping,
+    total: discountedSubtotal + tax + shipping,
+    hasUnknownPrice: false,
+    discountPercent
+  };
+}
+
+async function recordPromoRedemptionIfNeeded(orderId) {
+  try {
+    const { data: order, error } = await supabaseAdmin
+      .from("orders")
+      .select("id, promo_code, shopper_user_id")
+      .eq("id", orderId)
+      .maybeSingle();
+    if (error || !order?.promo_code || !order?.shopper_user_id) return;
+    const { error: insertError } = await supabaseAdmin.from("promo_redemptions").insert({
+      user_id: order.shopper_user_id,
+      promo_code: order.promo_code,
+      order_id: order.id
+    });
+    if (insertError && insertError.code !== "23505") {
+      console.error("Promo redemption insert failed:", insertError.message || insertError);
+    }
+  } catch (e) {
+    console.warn("recordPromoRedemptionIfNeeded:", e.message || e);
+  }
+}
 const smsEnabled = Boolean(TELNYX_API_KEY && TELNYX_FROM_NUMBER);
 const paymentColumnsHealth = {
   checkedAt: null,
@@ -128,9 +265,81 @@ function createOrderNumber() {
   return "NOIRE-" + timestamp.slice(0, 15);
 }
 
+app.post("/api/promo/validate", async (req, res) => {
+  try {
+    const user = await getUserFromRequest(req);
+    if (!user) {
+      return res.status(401).json({ ok: false, error: "Sign in or create an account to use a promo code." });
+    }
+    const code = req.body?.code;
+    const result = await validatePromoForUser(code, user.id);
+    if (!result.ok) {
+      return res.status(400).json({ ok: false, error: result.error });
+    }
+    return res.json({ ok: true, code: result.code, percentOff: result.percentOff });
+  } catch (error) {
+    console.error("Promo validate error:", error);
+    return res.status(500).json({ ok: false, error: "Promo validation failed." });
+  }
+});
+
+app.get("/api/admin/promos", async (req, res) => {
+  if (!ADMIN_PROMO_SECRET) {
+    return res.status(503).json({ error: "ADMIN_PROMO_SECRET is not configured." });
+  }
+  if (String(req.headers["x-admin-secret"] || "") !== ADMIN_PROMO_SECRET) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+  const { data, error } = await supabaseAdmin
+    .from("promo_codes")
+    .select("code, percent_off, max_total_redemptions, per_user_limit, active, created_at")
+    .order("created_at", { ascending: false });
+  if (error) {
+    return res.status(500).json({ error: error.message });
+  }
+  return res.json({ promos: data || [] });
+});
+
+app.post("/api/admin/promos", async (req, res) => {
+  if (!ADMIN_PROMO_SECRET) {
+    return res.status(503).json({ error: "ADMIN_PROMO_SECRET is not configured." });
+  }
+  if (String(req.headers["x-admin-secret"] || "") !== ADMIN_PROMO_SECRET) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+  const body = req.body || {};
+  const code = normalizePromoCode(body.code);
+  const percentOff = Number(body.percentOff);
+  const perUserLimit = Math.max(1, parseInt(body.perUserLimit, 10) || 1);
+  const maxTotal = body.maxTotalRedemptions;
+  const maxTotalRedemptions = maxTotal === null || maxTotal === "" || maxTotal === undefined
+    ? null
+    : Math.max(0, parseInt(maxTotal, 10));
+  const active = body.active !== false;
+  if (!code || Number.isNaN(percentOff) || percentOff <= 0 || percentOff > 100) {
+    return res.status(400).json({ error: "Invalid code or percentOff (1-100)." });
+  }
+  const { data, error } = await supabaseAdmin
+    .from("promo_codes")
+    .upsert({
+      code,
+      percent_off: percentOff,
+      max_total_redemptions: maxTotalRedemptions,
+      per_user_limit: perUserLimit,
+      active
+    }, { onConflict: "code" })
+    .select("code, percent_off, max_total_redemptions, per_user_limit, active")
+    .single();
+  if (error) {
+    console.error("Admin promo upsert failed:", error);
+    return res.status(500).json({ error: error.message || "Save failed" });
+  }
+  return res.json({ ok: true, promo: data });
+});
+
 app.post("/api/create-checkout-session", async (req, res) => {
   try {
-    const { customer, cart, totals } = req.body || {};
+    const { customer, cart, totals, promoCode: promoCodeRaw } = req.body || {};
     if (!customer || !Array.isArray(cart) || cart.length === 0 || !totals) {
       return res.status(400).json({ error: "Missing checkout payload." });
     }
@@ -138,19 +347,45 @@ app.post("/api/create-checkout-session", async (req, res) => {
     const customerName = String(customer.name || "").trim();
     const customerEmail = String(customer.email || "").trim().toLowerCase();
     const customerPhone = String(customer.phone || "").trim();
-    const shippingAddress = String(customer.shippingAddress || "").trim();
+    const shippingAddress = buildShippingAddressString(customer);
     const notes = String(customer.notes || "").trim();
     if (!customerName || !customerEmail || !customerPhone || !shippingAddress) {
       return res.status(400).json({ error: "Missing required customer fields." });
     }
 
-    const subtotal = Number(totals.subtotal);
-    const tax = Number(totals.tax);
-    const shippingCost = Number(totals.shipping);
-    const total = Number(totals.total);
-    if ([subtotal, tax, shippingCost, total].some((value) => Number.isNaN(value))) {
-      return res.status(400).json({ error: "Invalid totals." });
+    const promoCodeInput = String(promoCodeRaw || "").trim();
+    const user = await getUserFromRequest(req);
+    let discountPercent = 0;
+    let appliedPromoCode = null;
+    if (promoCodeInput) {
+      if (!user) {
+        return res.status(401).json({ error: "Sign in or create an account to use a promo code." });
+      }
+      const promoResult = await validatePromoForUser(promoCodeInput, user.id);
+      if (!promoResult.ok) {
+        return res.status(400).json({ error: promoResult.error });
+      }
+      discountPercent = promoResult.percentOff;
+      appliedPromoCode = promoResult.code;
     }
+
+    const serverTotals = computeTotalsWithDiscount(cart, discountPercent);
+    if (serverTotals.hasUnknownPrice || serverTotals.total === null) {
+      return res.status(400).json({ error: "Invalid cart pricing." });
+    }
+
+    const { subtotal, tax, shipping: shippingCost, total } = serverTotals;
+    const clientSubtotal = Number(totals.subtotal);
+    const clientTax = Number(totals.tax);
+    const clientShip = Number(totals.shipping);
+    const clientTotal = Number(totals.total);
+    const drift = Math.abs(clientSubtotal - subtotal) + Math.abs(clientTax - tax)
+      + Math.abs(clientShip - shippingCost) + Math.abs(clientTotal - total);
+    if (drift > 0.02) {
+      return res.status(400).json({ error: "Order totals are out of date. Refresh checkout and try again." });
+    }
+
+    const discountFactor = discountPercent > 0 ? 1 - Math.min(100, discountPercent) / 100 : 1;
 
     const lineItems = cart.map((item) => {
       const quantity = Math.max(1, Number(item.quantity) || 1);
@@ -160,7 +395,7 @@ app.post("/api/create-checkout-session", async (req, res) => {
         price_data: {
           currency: "usd",
           product_data: { name: `${item.name}${variantText}` },
-          unit_amount: Math.max(0, Math.round(unitPrice * 100))
+          unit_amount: Math.max(0, Math.round(unitPrice * 100 * discountFactor))
         },
         quantity
       };
@@ -187,23 +422,29 @@ app.post("/api/create-checkout-session", async (req, res) => {
     }
 
     const orderNumber = createOrderNumber();
+    const orderInsert = {
+      order_number: orderNumber,
+      customer_name: customerName,
+      customer_email: customerEmail,
+      customer_phone: customerPhone,
+      shipping_address: shippingAddress,
+      notes,
+      subtotal,
+      tax,
+      shipping_cost: shippingCost,
+      total,
+      status: "pending",
+      owner_notification_email: customerEmail
+    };
+    if (appliedPromoCode) {
+      orderInsert.promo_code = appliedPromoCode;
+      orderInsert.discount_percent = discountPercent;
+      orderInsert.shopper_user_id = user.id;
+    }
+
     const { data: orderRow, error: orderError } = await supabaseAdmin
       .from("orders")
-      .insert({
-        order_number: orderNumber,
-        customer_name: customerName,
-        customer_email: customerEmail,
-        customer_phone: customerPhone,
-        shipping_address: shippingAddress,
-        notes,
-        subtotal,
-        tax,
-        shipping_cost: shippingCost,
-        total,
-        status: "pending",
-        // Required by existing Supabase schema; does not trigger email sending.
-        owner_notification_email: customerEmail
-      })
+      .insert(orderInsert)
       .select("id, order_number")
       .single();
 
@@ -404,9 +645,14 @@ async function markOrderPaid(orderId, sessionId) {
       .select("id");
   }
 
+  const updated = Array.isArray(response.data) && response.data.length > 0;
+  if (updated) {
+    await recordPromoRedemptionIfNeeded(orderId);
+  }
+
   return {
     error: response.error,
-    updated: Array.isArray(response.data) && response.data.length > 0
+    updated
   };
 }
 
