@@ -105,6 +105,12 @@ body.launch-locked .site-footer {
   font-size: 1.03rem;
 }
 
+.launch-event-time {
+  margin: 4px 0 0;
+  font-weight: 700;
+  color: #2f241d;
+}
+
 .launch-event-address {
   margin: 6px 0 0;
   color: #5e4e42;
