@@ -34,7 +34,7 @@
 
   <header class="site-header">
     <div class="nav-wrap">
-      <a href="#" class="brand" aria-label="Noire homepage">
+      <a href="#" id="brandToggle" class="brand" aria-label="Noire homepage">
         <img class="brand-logo" src="assets/noire-logo.png" alt="Noire logo">
       </a>
 
@@ -56,6 +56,16 @@
             </svg>
           </button>
         </span>
+      </div>
+    </div>
+    <div id="mobileMenu" class="mobile-menu hidden">
+      <a class="mobile-menu-link" href="#">Home</a>
+      <a class="mobile-menu-link" href="#shop-all">Shop</a>
+      <a class="mobile-menu-link" href="#our-story">Our Story</a>
+      <a class="mobile-menu-link" href="#contact-us">Contact Us</a>
+      <div class="mobile-menu-actions">
+        <button type="button" id="mobileAccountButton" class="nav-text-btn">Account</button>
+        <button type="button" id="mobileCartButton" class="nav-text-btn">Cart</button>
       </div>
     </div>
   </header>
@@ -748,6 +758,10 @@
     const contactThanksView = document.getElementById("contactThanksView");
     const footer = document.querySelector(".site-footer");
     const navLinks = document.querySelectorAll(".nav-link");
+    const brandToggle = document.getElementById("brandToggle");
+    const mobileMenu = document.getElementById("mobileMenu");
+    const mobileAccountButton = document.getElementById("mobileAccountButton");
+    const mobileCartButton = document.getElementById("mobileCartButton");
 
     const detailName = document.getElementById("detailName");
     const detailDescription = document.getElementById("detailDescription");
@@ -1341,6 +1355,23 @@
       cartDrawer.classList.add("hidden");
     }
 
+    function closeMobileMenu() {
+      if (!mobileMenu) return;
+      mobileMenu.classList.add("hidden");
+      mobileMenu.classList.remove("is-open");
+    }
+
+    function toggleMobileMenu() {
+      if (!mobileMenu) return;
+      const isOpen = mobileMenu.classList.contains("is-open");
+      if (isOpen) {
+        closeMobileMenu();
+      } else {
+        mobileMenu.classList.remove("hidden");
+        mobileMenu.classList.add("is-open");
+      }
+    }
+
     function openImageZoom() {
       if (!detailImage.src) return;
       zoomedImage.src = detailImage.src;
@@ -1780,6 +1811,31 @@
       closeCart();
       window.location.hash = "#checkout";
     });
+    if (brandToggle) {
+      brandToggle.addEventListener("click", (event) => {
+        if (window.matchMedia("(max-width: 900px)").matches) {
+          event.preventDefault();
+          toggleMobileMenu();
+        }
+      });
+    }
+    if (mobileAccountButton) {
+      mobileAccountButton.addEventListener("click", () => {
+        closeMobileMenu();
+        void openAuthModal();
+      });
+    }
+    if (mobileCartButton) {
+      mobileCartButton.addEventListener("click", () => {
+        closeMobileMenu();
+        openCart();
+      });
+    }
+    document.querySelectorAll(".mobile-menu-link").forEach((link) => {
+      link.addEventListener("click", () => {
+        closeMobileMenu();
+      });
+    });
     if (checkoutSuccessContinue) {
       checkoutSuccessContinue.addEventListener("click", () => {
         window.location.href = "#shop-all";
@@ -2094,6 +2150,11 @@
     });
 
     window.addEventListener("hashchange", syncViewFromHash);
+    window.addEventListener("resize", () => {
+      if (!window.matchMedia("(max-width: 900px)").matches) {
+        closeMobileMenu();
+      }
+    });
 
     function setupScrollReveal() {
       const revealObserver = new IntersectionObserver(

@@ -108,6 +108,10 @@ a {
   background: rgba(255, 255, 255, 0.55);
 }
 
+.mobile-menu {
+  display: none;
+}
+
 .cart-button-wrap {
   position: relative;
   display: inline-flex;
@@ -1374,6 +1378,31 @@ h2 {
 
   .nav-wrap {
     grid-template-columns: 1fr auto;
+  }
+
+  .nav-actions {
+    display: none;
+  }
+
+  .mobile-menu.is-open {
+    display: grid;
+    gap: 10px;
+    padding: 12px clamp(14px, 3vw, 24px) 14px;
+    border-top: 1px solid rgba(0, 0, 0, 0.08);
+    background: var(--surface-sand);
+  }
+
+  .mobile-menu-link {
+    display: block;
+    padding: 10px 12px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.45);
+    font-weight: 600;
+  }
+
+  .mobile-menu-actions {
+    display: flex;
+    gap: 10px;
   }
 
   .hero {
