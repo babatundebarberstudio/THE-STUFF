@@ -859,7 +859,30 @@ h2 {
   padding: 14px;
   display: flex;
   justify-content: space-between;
+  align-items: center;
   gap: 12px;
+}
+
+.cart-item-actions {
+  display: grid;
+  justify-items: end;
+  gap: 8px;
+}
+
+.cart-remove-btn {
+  border: 1px solid #d7d7d7;
+  background: #fff;
+  color: #8c1b1b;
+  border-radius: 999px;
+  padding: 6px 12px;
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.cart-remove-btn:hover {
+  background: #fff5f5;
 }
 
 .cart-item-row h4 {

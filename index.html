@@ -1173,16 +1173,26 @@
       }
 
       listTarget.innerHTML = cart
-        .map((item) => {
+        .map((item, index) => {
           const variantText = item.color ? " (" + item.color + ")" : "";
           return (
             "<div class=\"cart-item-row\">" +
             "<div><h4>" + item.name + variantText + "</h4><p>Qty: " + item.quantity + "</p></div>" +
+            "<div class=\"cart-item-actions\">" +
             "<strong>" + (item.price === null ? "Unknown" : "$" + (item.price * item.quantity).toFixed(2)) + "</strong>" +
+            "<button type=\"button\" class=\"cart-remove-btn\" data-remove-index=\"" + index + "\" aria-label=\"Remove " + item.name + variantText + " from cart\">Remove</button>" +
+            "</div>" +
             "</div>"
           );
         })
         .join("");
+    }
+
+    function removeCartItem(index) {
+      if (Number.isNaN(index) || index < 0 || index >= cart.length) return;
+      cart.splice(index, 1);
+      persistCart();
+      renderAllCartUI();
     }
 
     function renderTotals() {
@@ -1753,6 +1763,18 @@
     cartButton.addEventListener("click", openCart);
     closeCartButton.addEventListener("click", closeCart);
     cartOverlay.addEventListener("click", closeCart);
+    cartItems.addEventListener("click", (event) => {
+      const button = event.target.closest(".cart-remove-btn");
+      if (!button) return;
+      const index = parseInt(button.getAttribute("data-remove-index"), 10);
+      removeCartItem(index);
+    });
+    checkoutItems.addEventListener("click", (event) => {
+      const button = event.target.closest(".cart-remove-btn");
+      if (!button) return;
+      const index = parseInt(button.getAttribute("data-remove-index"), 10);
+      removeCartItem(index);
+    });
     checkoutButton.addEventListener("click", () => {
       closeCart();
       window.location.hash = "#checkout";
