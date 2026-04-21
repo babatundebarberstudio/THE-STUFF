@@ -108,6 +108,37 @@ a {
   background: rgba(255, 255, 255, 0.55);
 }
 
+.cart-button-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cart-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  box-sizing: border-box;
+  border-radius: 999px;
+  background: #111;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 18px;
+  text-align: center;
+  pointer-events: none;
+  z-index: 2;
+  border: 2px solid var(--surface-sand);
+}
+
+.cart-badge.hidden {
+  display: none;
+}
+
 .brand {
   justify-self: start;
 }

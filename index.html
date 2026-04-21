@@ -44,13 +44,16 @@
 
       <div class="nav-actions">
         <button type="button" id="authNavButton" class="nav-text-btn">Account</button>
-        <button id="cartButton" class="icon-button" aria-label="Shopping cart">
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <circle cx="9" cy="20" r="1.6"></circle>
-            <circle cx="17" cy="20" r="1.6"></circle>
-            <path d="M3 4h2l2.2 10.2a2 2 0 0 0 2 1.6h7.7a2 2 0 0 0 2-1.5L21 8H7.1"></path>
-          </svg>
-        </button>
+        <span class="cart-button-wrap">
+          <span id="cartBadge" class="cart-badge hidden" aria-hidden="true">0</span>
+          <button id="cartButton" class="icon-button" aria-label="Shopping cart">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <circle cx="9" cy="20" r="1.6"></circle>
+              <circle cx="17" cy="20" r="1.6"></circle>
+              <path d="M3 4h2l2.2 10.2a2 2 0 0 0 2 1.6h7.7a2 2 0 0 0 2-1.5L21 8H7.1"></path>
+            </svg>
+          </button>
+        </span>
       </div>
     </div>
   </header>
@@ -731,6 +734,7 @@
 
     loadCartFromStorage();
     syncCartPricesFromCatalog();
+
     const revealElements = document.querySelectorAll(".reveal");
     const homeView = document.getElementById("homeView");
     const shopView = document.getElementById("shopView");
@@ -762,6 +766,26 @@
     const leaveInColorToggle = document.getElementById("leaveInColorToggle");
 
     const cartButton = document.getElementById("cartButton");
+    const cartBadge = document.getElementById("cartBadge");
+
+    function getCartTotalQuantity() {
+      return cart.reduce((sum, item) => sum + Math.max(1, parseInt(item.quantity, 10) || 1), 0);
+    }
+
+    function updateCartBadge() {
+      if (!cartBadge || !cartButton) return;
+      const n = getCartTotalQuantity();
+      if (n <= 0) {
+        cartBadge.classList.add("hidden");
+        cartBadge.textContent = "0";
+        cartButton.setAttribute("aria-label", "Shopping cart");
+        return;
+      }
+      cartBadge.classList.remove("hidden");
+      cartBadge.textContent = n > 99 ? "99+" : String(n);
+      cartButton.setAttribute("aria-label", "Shopping cart, " + n + " items");
+    }
+
     const closeCartButton = document.getElementById("closeCartButton");
     const checkoutButton = document.getElementById("checkoutButton");
     const cartOverlay = document.getElementById("cartOverlay");
@@ -1185,6 +1209,7 @@
       renderCartItems(cartItems);
       renderCartItems(checkoutItems);
       renderTotals();
+      updateCartBadge();
     }
 
     async function getCheckoutAuthHeaders() {
