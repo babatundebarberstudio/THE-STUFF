@@ -83,12 +83,19 @@
           </button>
         </span>
       </div>
+      <button
+        type="button"
+        id="mobileMenuToggle"
+        class="mobile-menu-toggle"
+        aria-label="Open menu"
+        aria-controls="mobileMenu"
+        aria-expanded="false"
+      >
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
     </div>
-    <nav class="mobile-nav-tabs" aria-label="Mobile quick navigation">
-      <a class="mobile-nav-tab" href="#shop-all">Shop</a>
-      <a class="mobile-nav-tab" href="#our-story">Our Story</a>
-      <a class="mobile-nav-tab" href="#contact-us">Contact Us</a>
-    </nav>
     <div id="mobileMenu" class="mobile-menu hidden">
       <a class="mobile-menu-link" href="#">Home</a>
       <a class="mobile-menu-link" href="#shop-all">Shop</a>
@@ -842,6 +849,7 @@
     const footer = document.querySelector(".site-footer");
     const navLinks = document.querySelectorAll(".nav-link");
     const brandToggle = document.getElementById("brandToggle");
+    const mobileMenuToggle = document.getElementById("mobileMenuToggle");
     const mobileMenu = document.getElementById("mobileMenu");
     const mobileAccountButton = document.getElementById("mobileAccountButton");
     const mobileCartButton = document.getElementById("mobileCartButton");
@@ -1552,6 +1560,10 @@
       if (!mobileMenu) return;
       mobileMenu.classList.add("hidden");
       mobileMenu.classList.remove("is-open");
+      if (mobileMenuToggle) {
+        mobileMenuToggle.setAttribute("aria-expanded", "false");
+        mobileMenuToggle.setAttribute("aria-label", "Open menu");
+      }
     }
 
     function toggleMobileMenu() {
@@ -1562,6 +1574,10 @@
       } else {
         mobileMenu.classList.remove("hidden");
         mobileMenu.classList.add("is-open");
+        if (mobileMenuToggle) {
+          mobileMenuToggle.setAttribute("aria-expanded", "true");
+          mobileMenuToggle.setAttribute("aria-label", "Close menu");
+        }
       }
     }
 
@@ -2052,10 +2068,14 @@
     });
     if (brandToggle) {
       brandToggle.addEventListener("click", (event) => {
-        if (window.matchMedia("(max-width: 900px)").matches) {
-          event.preventDefault();
-          toggleMobileMenu();
-        }
+        if (!window.matchMedia("(max-width: 900px)").matches) return;
+        closeMobileMenu();
+      });
+    }
+    if (mobileMenuToggle) {
+      mobileMenuToggle.addEventListener("click", (event) => {
+        event.preventDefault();
+        toggleMobileMenu();
       });
     }
     if (mobileAccountButton) {
@@ -2074,6 +2094,16 @@
       link.addEventListener("click", () => {
         closeMobileMenu();
       });
+    });
+    document.addEventListener("click", (event) => {
+      if (!window.matchMedia("(max-width: 900px)").matches) return;
+      if (!mobileMenu || !mobileMenuToggle) return;
+      if (mobileMenu.classList.contains("hidden")) return;
+      const clickedInsideMenu = mobileMenu.contains(event.target);
+      const clickedToggle = mobileMenuToggle.contains(event.target);
+      if (!clickedInsideMenu && !clickedToggle) {
+        closeMobileMenu();
+      }
     });
     if (checkoutSuccessContinue) {
       checkoutSuccessContinue.addEventListener("click", () => {
