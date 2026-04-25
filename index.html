@@ -47,14 +47,14 @@
   </div>
   <div class="announcement-bar" aria-label="Launch day sale announcement">
     <div class="announcement-track">
-      <span>Launch Day Sale: 30% off your first order over $30 with code: LAUNCHDAY</span>
-      <span>Launch Day Sale: 30% off your first order over $30 with code: LAUNCHDAY</span>
-      <span>Launch Day Sale: 30% off your first order over $30 with code: LAUNCHDAY</span>
-      <span>Launch Day Sale: 30% off your first order over $30 with code: LAUNCHDAY</span>
-      <span>Launch Day Sale: 30% off your first order over $30 with code: LAUNCHDAY</span>
-      <span>Launch Day Sale: 30% off your first order over $30 with code: LAUNCHDAY</span>
-      <span>Launch Day Sale: 30% off your first order over $30 with code: LAUNCHDAY</span>
-      <span>Launch Day Sale: 30% off your first order over $30 with code: LAUNCHDAY</span>
+      <span>Launch Day Sale: 20% off your first order over $30 with code: LAUNCHDAY</span>
+      <span>Launch Day Sale: 20% off your first order over $30 with code: LAUNCHDAY</span>
+      <span>Launch Day Sale: 20% off your first order over $30 with code: LAUNCHDAY</span>
+      <span>Launch Day Sale: 20% off your first order over $30 with code: LAUNCHDAY</span>
+      <span>Launch Day Sale: 20% off your first order over $30 with code: LAUNCHDAY</span>
+      <span>Launch Day Sale: 20% off your first order over $30 with code: LAUNCHDAY</span>
+      <span>Launch Day Sale: 20% off your first order over $30 with code: LAUNCHDAY</span>
+      <span>Launch Day Sale: 20% off your first order over $30 with code: LAUNCHDAY</span>
     </div>
   </div>
 
@@ -147,6 +147,19 @@
         </p>
         <div class="product-grid">
           <article class="product-card">
+            <a class="product-top-link" href="#product/noire-bundle-deal">
+              <img
+                class="product-thumb"
+                src="assets/noire-hero.png"
+                alt="Noire Bundle Deal"
+              >
+              <h3>Noire Bundle Deal</h3>
+            </a>
+            <p class="product-price">Price: $44.99</p>
+            <p class="shipping-note">Shipping: 4-7 business days</p>
+            <a class="product-link" href="#product/noire-bundle-deal">View Product</a>
+          </article>
+          <article class="product-card">
             <a class="product-top-link" href="#product/scalp-growth-oil">
               <img
                 class="product-thumb"
@@ -216,6 +229,15 @@
           Explore every Noire essential and select the formula that fits your routine.
         </p>
         <div class="product-grid shop-grid">
+          <article class="product-card">
+            <a class="product-top-link" href="#product/noire-bundle-deal">
+              <img class="product-thumb" src="assets/noire-hero.png" alt="Noire Bundle Deal">
+              <h3>Noire Bundle Deal</h3>
+            </a>
+            <p class="product-price">Price: $44.99</p>
+            <p class="shipping-note">Shipping: 4-7 business days</p>
+            <a class="product-link" href="#product/noire-bundle-deal">View Product</a>
+          </article>
           <article class="product-card">
             <a class="product-top-link" href="#product/scalp-growth-oil">
               <img class="product-thumb" src="assets/Scalp Growth Oil Main.png" alt="Scalp/Growth Oil">
@@ -571,6 +593,34 @@
   <script>
     document.getElementById("year").textContent = new Date().getFullYear();
     const products = {
+      "noire-bundle-deal": {
+        slug: "noire-bundle-deal",
+        name: "Noire Bundle Deal",
+        price: 44.99,
+        description: "Get the full Noire routine in one bundle, including Scalp/Growth Oil, Hydrating Curl Leave-In Conditioner, Curl Refresh Spray, and Curl Restore Mask for complete moisture, definition, and care.",
+        highlights: [
+          "Complete 4-product Noire routine in one bundle",
+          "Covers scalp care, hydration, refresh, and deep treatment",
+          "Designed to help support softer, healthier-looking curls",
+          "Great value compared to buying products separately",
+          "Vegan, non-GMO, and cruelty-free"
+        ],
+        directions: "Use each product according to its individual directions. Start with Scalp/Growth Oil on scalp as needed, apply Hydrating Curl Leave-In Conditioner to damp hair, use Curl Refresh Spray between wash days, and apply Curl Restore Mask on wash days for deeper moisture.",
+        ingredients: [
+          { name: "Scalp/Growth Oil", benefit: "supports scalp nourishment and healthy-looking growth" },
+          { name: "Hydrating Curl Leave-In Conditioner", benefit: "adds daily hydration and softness" },
+          { name: "Curl Refresh Spray", benefit: "revives curls and helps reduce frizz between wash days" },
+          { name: "Curl Restore Mask", benefit: "provides deep moisture and improves manageability" }
+        ],
+        gallery: [
+          "assets/noire-hero.png",
+          "assets/Scalp Growth Oil Main.png",
+          "assets/Leave in Condtioner Black Main.png",
+          "assets/Leave in Conditioner White Main.png",
+          "assets/Curl Refresh Spray Main.png",
+          "assets/Curl restore mask Main.png"
+        ]
+      },
       "scalp-growth-oil": {
         slug: "scalp-growth-oil",
         name: "Scalp/Growth Oil",
@@ -1648,6 +1698,12 @@
       if (details.email) rows.push("<p><strong>Email:</strong> " + escapeHtml(details.email) + "</p>");
       if (details.phone) rows.push("<p><strong>Phone:</strong> " + escapeHtml(details.phone) + "</p>");
       if (details.address) rows.push("<p><strong>Ship To:</strong> " + escapeHtml(details.address) + "</p>");
+      if (details.preDiscountSubtotal) rows.push("<p><strong>Items Subtotal:</strong> " + escapeHtml(details.preDiscountSubtotal) + "</p>");
+      if (details.discountLabel) rows.push("<p><strong>" + escapeHtml(details.discountLabel) + ":</strong> " + escapeHtml(details.discountAmount || "") + "</p>");
+      if (details.subtotal) rows.push("<p><strong>Subtotal After Discount:</strong> " + escapeHtml(details.subtotal) + "</p>");
+      if (details.tax) rows.push("<p><strong>Tax:</strong> " + escapeHtml(details.tax) + "</p>");
+      if (details.shippingCost) rows.push("<p><strong>Shipping:</strong> " + escapeHtml(details.shippingCost) + "</p>");
+      if (details.total) rows.push("<p><strong>Total:</strong> " + escapeHtml(details.total) + "</p>");
       rows.push("<p><strong>Estimated Shipping:</strong> 4-7 business days</p>");
       checkoutSuccessMeta.innerHTML = rows.join("");
       checkoutSuccessMeta.classList.remove("hidden");
@@ -1681,7 +1737,9 @@
         receiptRow("Email", details.email) +
         receiptRow("Phone", details.phone) +
         receiptRow("Ship To", details.address) +
-        receiptRow("Subtotal", details.subtotal) +
+        receiptRow("Items Subtotal", details.preDiscountSubtotal) +
+        receiptRow(details.discountLabel || "Discount", details.discountAmount) +
+        receiptRow("Subtotal After Discount", details.subtotal) +
         receiptRow("Tax", details.tax) +
         receiptRow("Shipping", details.shippingCost) +
         receiptRow("Total", details.total) +
@@ -1832,6 +1890,11 @@
               email: data.customerEmail,
               phone: data.customerPhone,
               address: data.shippingAddress,
+              preDiscountSubtotal: data.preDiscountSubtotal !== null && data.preDiscountSubtotal !== undefined ? "$" + Number(data.preDiscountSubtotal).toFixed(2) : "",
+              discountAmount: data.discountAmount !== null && data.discountAmount !== undefined && Number(data.discountAmount) > 0 ? "-$" + Number(data.discountAmount).toFixed(2) : "",
+              discountLabel: data.discountPercent && Number(data.discountPercent) > 0
+                ? "Discount" + (data.promoCode ? " (" + data.promoCode + " " + Number(data.discountPercent).toFixed(0) + "%)" : " (" + Number(data.discountPercent).toFixed(0) + "%)")
+                : "",
               subtotal: data.subtotal !== null && data.subtotal !== undefined ? "$" + Number(data.subtotal).toFixed(2) : "",
               tax: data.tax !== null && data.tax !== undefined ? "$" + Number(data.tax).toFixed(2) : "",
               shippingCost: data.shippingCost !== null && data.shippingCost !== undefined ? "$" + Number(data.shippingCost).toFixed(2) : "",
@@ -1847,6 +1910,11 @@
               email: data.customerEmail,
               phone: data.customerPhone,
               address: data.shippingAddress,
+              preDiscountSubtotal: data.preDiscountSubtotal !== null && data.preDiscountSubtotal !== undefined ? "$" + Number(data.preDiscountSubtotal).toFixed(2) : "",
+              discountAmount: data.discountAmount !== null && data.discountAmount !== undefined && Number(data.discountAmount) > 0 ? "-$" + Number(data.discountAmount).toFixed(2) : "",
+              discountLabel: data.discountPercent && Number(data.discountPercent) > 0
+                ? "Discount" + (data.promoCode ? " (" + data.promoCode + " " + Number(data.discountPercent).toFixed(0) + "%)" : " (" + Number(data.discountPercent).toFixed(0) + "%)")
+                : "",
               subtotal: data.subtotal !== null && data.subtotal !== undefined ? "$" + Number(data.subtotal).toFixed(2) : "",
               tax: data.tax !== null && data.tax !== undefined ? "$" + Number(data.tax).toFixed(2) : "",
               shippingCost: data.shippingCost !== null && data.shippingCost !== undefined ? "$" + Number(data.shippingCost).toFixed(2) : "",

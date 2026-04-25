@@ -538,12 +538,20 @@ app.post("/api/confirm-checkout-session", async (req, res) => {
 
     const { data: orderData, error: orderLookupError } = await supabaseAdmin
       .from("orders")
-      .select("order_number, customer_name, customer_email, customer_phone, shipping_address, subtotal, tax, shipping_cost, total")
+      .select("order_number, customer_name, customer_email, customer_phone, shipping_address, subtotal, tax, shipping_cost, total, promo_code, discount_percent")
       .eq("id", orderId)
       .single();
     if (orderLookupError) {
       console.error("Failed to load order details for confirmation:", orderLookupError);
     }
+
+    const discountPercent = Number(orderData?.discount_percent || 0);
+    const hasDiscount = discountPercent > 0;
+    const numericSubtotal = Number(orderData?.subtotal ?? 0);
+    const preDiscountSubtotal = hasDiscount && discountPercent < 100
+      ? numericSubtotal / (1 - discountPercent / 100)
+      : numericSubtotal;
+    const discountAmount = hasDiscount ? Math.max(0, preDiscountSubtotal - numericSubtotal) : 0;
 
     return res.json({
       orderNumber,
@@ -552,6 +560,10 @@ app.post("/api/confirm-checkout-session", async (req, res) => {
       customerEmail: orderData?.customer_email || "",
       customerPhone: orderData?.customer_phone || "",
       shippingAddress: orderData?.shipping_address || "",
+      promoCode: orderData?.promo_code || "",
+      discountPercent: hasDiscount ? discountPercent : 0,
+      discountAmount: hasDiscount ? discountAmount : 0,
+      preDiscountSubtotal: hasDiscount ? preDiscountSubtotal : null,
       subtotal: orderData?.subtotal ?? null,
       tax: orderData?.tax ?? null,
       shippingCost: orderData?.shipping_cost ?? null,

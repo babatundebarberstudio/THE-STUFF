@@ -20,6 +20,9 @@ html,
 body {
   margin: 0;
   padding: 0;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
 }
 
 body {
@@ -27,6 +30,13 @@ body {
   color: var(--text);
   background: var(--bg);
   line-height: 1.5;
+}
+
+img,
+video,
+canvas,
+svg {
+  max-width: 100%;
 }
 
 body.launch-locked .announcement-bar,
@@ -1613,5 +1623,39 @@ h2 {
 
   .footer-contact {
     justify-items: start;
+  }
+
+  .cart-item-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .cart-item-actions {
+    width: 100%;
+    justify-items: start;
+  }
+}
+
+@media (max-width: 640px) {
+  .container {
+    width: min(1120px, calc(100vw - 20px));
+  }
+
+  .product-detail-card {
+    padding: 18px;
+  }
+
+  .detail-image {
+    width: 100%;
+    height: auto;
+    max-height: 300px;
+  }
+
+  .launch-bypass {
+    flex-wrap: wrap;
+  }
+
+  .launch-bypass input {
+    width: 100%;
   }
 }
