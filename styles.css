@@ -1587,7 +1587,7 @@ h2 {
   }
 
   .product-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .section-head-row {
@@ -1613,6 +1613,12 @@ h2 {
 
   .story-layout {
     grid-template-columns: 1fr;
+  }
+
+  .story-photo {
+    max-height: none;
+    height: auto;
+    object-fit: contain;
   }
 
   .footer-wrap {
