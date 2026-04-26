@@ -14,6 +14,7 @@ if (!process.env.STRIPE_SECRET_KEY || !process.env.SUPABASE_URL || !process.env.
 const {
   PORT = 4242,
   FRONTEND_URL = "http://127.0.0.1:5500",
+  CORS_ALLOWED_ORIGINS = "",
   STRIPE_SECRET_KEY,
   STRIPE_WEBHOOK_SECRET,
   SUPABASE_URL,
@@ -32,6 +33,14 @@ if (!STRIPE_SECRET_KEY || !SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
 
 const stripe = new Stripe(STRIPE_SECRET_KEY);
 const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+
+function normalizeOrigin(value) {
+  return String(value || "").trim().replace(/\/+$/, "");
+}
+
+const explicitAllowedOrigins = [FRONTEND_URL, ...String(CORS_ALLOWED_ORIGINS || "").split(",")]
+  .map(normalizeOrigin)
+  .filter(Boolean);
 
 function createUserSupabaseClient(authHeader) {
   if (!SUPABASE_ANON_KEY) return null;
@@ -184,9 +193,12 @@ app.use(express.static(__dirname));
 app.use(cors({
   origin(origin, callback) {
     if (!origin || origin === "null") return callback(null, true);
+    const normalizedOrigin = normalizeOrigin(origin);
     const isLocalhostOrigin = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i.test(origin);
     const isRenderPreview = /^https:\/\/[a-z0-9-]+\.onrender\.com$/i.test(origin);
-    if (origin === FRONTEND_URL || isLocalhostOrigin || isRenderPreview) {
+    const isGithubPages = /^https:\/\/[a-z0-9-]+\.github\.io$/i.test(origin);
+    const isExplicitlyAllowed = explicitAllowedOrigins.includes(normalizedOrigin);
+    if (isExplicitlyAllowed || isLocalhostOrigin || isRenderPreview || isGithubPages) {
       return callback(null, true);
     }
     return callback(new Error(`CORS blocked for origin: ${origin}`));

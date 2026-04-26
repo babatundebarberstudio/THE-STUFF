@@ -181,7 +181,7 @@ a {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  animation: announcementScroll 16s linear infinite;
+  animation: announcementScroll 30s linear infinite;
 }
 
 @keyframes announcementScroll {
