@@ -38,9 +38,33 @@ function normalizeOrigin(value) {
   return String(value || "").trim().replace(/\/+$/, "");
 }
 
-const explicitAllowedOrigins = [FRONTEND_URL, ...String(CORS_ALLOWED_ORIGINS || "").split(",")]
-  .map(normalizeOrigin)
-  .filter(Boolean);
+function expandWwwOrigins(origins) {
+  const expanded = new Set();
+  origins.forEach((origin) => {
+    const normalized = normalizeOrigin(origin);
+    if (!normalized) return;
+    expanded.add(normalized);
+    try {
+      const parsed = new URL(normalized);
+      const host = parsed.hostname || "";
+      if (host.startsWith("www.")) {
+        parsed.hostname = host.slice(4);
+        expanded.add(parsed.toString().replace(/\/+$/, ""));
+      } else {
+        parsed.hostname = `www.${host}`;
+        expanded.add(parsed.toString().replace(/\/+$/, ""));
+      }
+    } catch (_e) {
+      // Ignore invalid origin values from env configuration.
+    }
+  });
+  return [...expanded];
+}
+
+const explicitAllowedOrigins = expandWwwOrigins([
+  FRONTEND_URL,
+  ...String(CORS_ALLOWED_ORIGINS || "").split(",")
+]);
 
 function createUserSupabaseClient(authHeader) {
   if (!SUPABASE_ANON_KEY) return null;
