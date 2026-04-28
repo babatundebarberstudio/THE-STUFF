@@ -1111,8 +1111,8 @@ h2 {
   position: relative;
   height: 10px;
   border-radius: 999px;
-  background: #d9c6b3;
-  border: 1px solid #c8b39d;
+  background: #000;
+  border: 1px solid #d9c6b3;
   overflow: hidden;
 }
 
@@ -1120,11 +1120,13 @@ h2 {
   height: 100%;
   width: 0;
   background: var(--surface-sand);
+  border-right: 1px solid #000;
   transition: width 0.24s ease, background-color 0.24s ease;
 }
 
 .free-shipping-progress.is-free {
   background: #1f9d47;
+  border-right: 0;
 }
 
 .free-shipping-check {
