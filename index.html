@@ -18,33 +18,7 @@
   >
   <link rel="stylesheet" href="styles.css">
 </head>
-<body class="intro-text-hidden launch-locked">
-  <div id="launchGate" class="launch-gate" role="dialog" aria-modal="true" aria-labelledby="launchGateTitle">
-    <div class="launch-gate-card">
-      <img class="launch-logo" src="assets/noire-logo.png" alt="Noire logo">
-      <p class="launch-eyebrow">Noire Hair Company LLC</p>
-      <h1 id="launchGateTitle">Launch Day Countdown</h1>
-      <p class="launch-gate-copy">We are almost live. The full site opens in:</p>
-      <p id="launchCountdown" class="launch-countdown">Loading countdown...</p>
-
-      <div class="launch-event-card">
-        <h2>See us in person on launch day</h2>
-        <p class="launch-event-name">Intercollegiate Black Cookout</p>
-        <p class="launch-event-time">2:00 PM - 7:00 PM</p>
-        <p class="launch-event-address">70 Arts Circle Dr<br>Evanston, IL 60208</p>
-      </div>
-
-      <div class="launch-bypass">
-        <input id="launchBypassInput" type="text" placeholder="Enter prerelease code" autocomplete="off" maxlength="64">
-        <button id="launchBypassButton" type="button" class="btn btn-primary">Enter</button>
-      </div>
-      <p id="launchBypassMessage" class="order-message hidden"></p>
-      <div class="launch-socials">
-        <a href="https://www.instagram.com/noirecurls/" target="_blank" rel="noopener noreferrer">Instagram @noirecurls</a>
-        <a href="https://www.tiktok.com/@noirehaircare" target="_blank" rel="noopener noreferrer">TikTok @noirehaircare</a>
-      </div>
-    </div>
-  </div>
+<body class="intro-text-hidden">
   <header class="site-header">
     <div class="nav-wrap">
       <a href="#" id="brandToggle" class="brand" aria-label="Noire homepage">
@@ -373,6 +347,11 @@
           <p><span>Subtotal</span><strong id="checkoutSubtotal">$0.00</strong></p>
           <p><span>Tax</span><strong id="checkoutTax">$0.00</strong></p>
           <p id="checkoutShippingRow"><span>Shipping</span><strong id="checkoutShipping">$0.00</strong></p>
+          <p id="checkoutFreeShippingHint" class="free-shipping-hint">Add $35.00 to get free shipping</p>
+          <div class="free-shipping-track" aria-hidden="true">
+            <div id="checkoutFreeShippingProgressBar" class="free-shipping-progress"></div>
+            <span id="checkoutFreeShippingCheck" class="free-shipping-check hidden">✓</span>
+          </div>
           <p class="checkout-grand"><span>Total</span><strong id="checkoutTotal">$0.00</strong></p>
         </div>
         <div class="checkout-promo-block">
@@ -769,9 +748,6 @@
     let activeGalleryIndex = 0;
     const CART_STORAGE_KEY = "noire_cart_v1";
     const RETURN_HASH_KEY = "noire_return_hash";
-    const LAUNCH_BYPASS_STORAGE_KEY = "noire_launch_bypass_v1";
-    const LAUNCH_BYPASS_CODE = "NOIREADMINPRERELEASE";
-    const LAUNCH_TARGET_MS = new Date("2026-04-25T14:00:00-05:00").getTime();
     const FREE_SHIPPING_THRESHOLD = 35;
     const STANDARD_SHIPPING_COST = 6.99;
     let appliedPromo = null;
@@ -847,12 +823,6 @@
     const mobileMenu = document.getElementById("mobileMenu");
     const mobileAccountButton = document.getElementById("mobileAccountButton");
     const mobileCartButton = document.getElementById("mobileCartButton");
-    const launchGate = document.getElementById("launchGate");
-    const launchCountdown = document.getElementById("launchCountdown");
-    const launchBypassInput = document.getElementById("launchBypassInput");
-    const launchBypassButton = document.getElementById("launchBypassButton");
-    const launchBypassMessage = document.getElementById("launchBypassMessage");
-
     const detailName = document.getElementById("detailName");
     const detailDescription = document.getElementById("detailDescription");
     const detailDescriptionToggle = document.getElementById("detailDescriptionToggle");
@@ -910,6 +880,9 @@
     const checkoutTax = document.getElementById("checkoutTax");
     const checkoutShipping = document.getElementById("checkoutShipping");
     const checkoutShippingRow = document.getElementById("checkoutShippingRow");
+    const checkoutFreeShippingHint = document.getElementById("checkoutFreeShippingHint");
+    const checkoutFreeShippingProgressBar = document.getElementById("checkoutFreeShippingProgressBar");
+    const checkoutFreeShippingCheck = document.getElementById("checkoutFreeShippingCheck");
     const checkoutTotal = document.getElementById("checkoutTotal");
     const imageZoomOverlay = document.getElementById("imageZoomOverlay");
     const closeZoomButton = document.getElementById("closeZoomButton");
@@ -1137,7 +1110,7 @@
 
     async function loadReviewsForProduct(slug, requestToken) {
       if (!supabaseClient) {
-        setReviewsForProduct(slug, []);
+        if (!reviewsByProduct[slug]) setReviewsForProduct(slug, []);
         renderReviewsForActiveProduct();
         return;
       }
@@ -1155,7 +1128,7 @@
         if (activeProduct && activeProduct.slug === slug) {
           showReviewMessage("Could not load reviews yet. Check Supabase table setup.");
         }
-        setReviewsForProduct(slug, []);
+        if (!reviewsByProduct[slug]) setReviewsForProduct(slug, []);
         renderReviewsForActiveProduct();
         return;
       }
@@ -1353,6 +1326,20 @@
         freeShippingCheck.classList.toggle("hidden", !isFree);
       }
 
+      if (checkoutFreeShippingHint && checkoutFreeShippingProgressBar && checkoutFreeShippingCheck) {
+        const subtotal = totals.subtotal && !totals.hasUnknownPrice ? totals.subtotal : 0;
+        const remaining = Math.max(0, FREE_SHIPPING_THRESHOLD - subtotal);
+        const progress = Math.min(100, (subtotal / FREE_SHIPPING_THRESHOLD) * 100);
+        const isFree = totals.qualifiesForFreeShipping;
+
+        checkoutFreeShippingHint.textContent = isFree
+          ? "Free shipping unlocked"
+          : "Add " + renderMoney(remaining) + " to get free shipping";
+        checkoutFreeShippingProgressBar.style.width = progress + "%";
+        checkoutFreeShippingProgressBar.classList.toggle("is-free", isFree);
+        checkoutFreeShippingCheck.classList.toggle("hidden", !isFree);
+      }
+
       if (checkoutDiscountRow && totals.discountAmount > 0) {
         checkoutDiscountRow.classList.remove("hidden");
         checkoutDiscountLabel.textContent = "Discount (" + (appliedPromo && appliedPromo.code ? appliedPromo.code : "promo") + ")";
@@ -1395,94 +1382,6 @@
       promoMessage.textContent = "";
       promoMessage.classList.add("hidden");
       promoMessage.classList.remove("is-error");
-    }
-
-    function isLaunchBypassEnabled() {
-      try {
-        return localStorage.getItem(LAUNCH_BYPASS_STORAGE_KEY) === "1";
-      } catch (_e) {
-        return false;
-      }
-    }
-
-    function setLaunchBypassEnabled(value) {
-      try {
-        if (value) {
-          localStorage.setItem(LAUNCH_BYPASS_STORAGE_KEY, "1");
-        } else {
-          localStorage.removeItem(LAUNCH_BYPASS_STORAGE_KEY);
-        }
-      } catch (_e) {
-        // ignore storage errors
-      }
-    }
-
-    function isLaunchUnlocked() {
-      return Date.now() >= LAUNCH_TARGET_MS || isLaunchBypassEnabled();
-    }
-
-    function formatLaunchCountdown(msLeft) {
-      const totalSeconds = Math.max(0, Math.floor(msLeft / 1000));
-      const days = Math.floor(totalSeconds / 86400);
-      const hours = Math.floor((totalSeconds % 86400) / 3600);
-      const minutes = Math.floor((totalSeconds % 3600) / 60);
-      const seconds = totalSeconds % 60;
-      const dayPart = days > 0 ? `${days}d ` : "";
-      return `${dayPart}${String(hours).padStart(2, "0")}h ${String(minutes).padStart(2, "0")}m ${String(seconds).padStart(2, "0")}s`;
-    }
-
-    function showLaunchBypassMessage(text, isError) {
-      if (!launchBypassMessage) return;
-      launchBypassMessage.textContent = text;
-      launchBypassMessage.classList.remove("hidden");
-      launchBypassMessage.classList.toggle("is-error", Boolean(isError));
-    }
-
-    function setLaunchGateVisible(isVisible) {
-      document.body.classList.toggle("launch-locked", isVisible);
-      if (!launchGate) return;
-      launchGate.classList.toggle("hidden", !isVisible);
-    }
-
-    function initLaunchGate() {
-      if (!launchGate || !launchCountdown || !launchBypassInput || !launchBypassButton) return;
-      let timerId = null;
-
-      const refreshGate = () => {
-        if (isLaunchUnlocked()) {
-          setLaunchGateVisible(false);
-          if (timerId) {
-            clearInterval(timerId);
-            timerId = null;
-          }
-          return;
-        }
-        setLaunchGateVisible(true);
-        launchCountdown.textContent = formatLaunchCountdown(LAUNCH_TARGET_MS - Date.now());
-      };
-
-      launchBypassButton.addEventListener("click", () => {
-        const code = launchBypassInput.value.trim();
-        if (code === LAUNCH_BYPASS_CODE) {
-          setLaunchBypassEnabled(true);
-          showLaunchBypassMessage("Bypass accepted. Opening site...", false);
-          refreshGate();
-          return;
-        }
-        showLaunchBypassMessage("Invalid code.", true);
-      });
-
-      launchBypassInput.addEventListener("keydown", (event) => {
-        if (event.key === "Enter") {
-          event.preventDefault();
-          launchBypassButton.click();
-        }
-      });
-
-      refreshGate();
-      if (!isLaunchUnlocked()) {
-        timerId = setInterval(refreshGate, 1000);
-      }
     }
 
     async function applyPromoFromInput() {
@@ -1647,11 +1546,16 @@
       prevImageButton.classList.toggle("hidden", !hasMultiplePhotos);
       nextImageButton.classList.toggle("hidden", !hasMultiplePhotos);
       requestAnimationFrame(updateDetailInfoToggle);
+      hideReviewMessage();
+      if (reviewsByProduct[product.slug]) {
+        renderReviewsForActiveProduct();
+      } else {
+        reviewList.innerHTML = "<p class=\"empty-note\">Loading reviews...</p>";
+      }
       latestReviewRequestToken += 1;
       loadReviewsForProduct(product.slug, latestReviewRequestToken);
       reviewForm.reset();
       reviewForm.classList.add("hidden");
-      hideReviewMessage();
 
       homeView.classList.add("hidden-view");
       shopView.classList.add("hidden-view");
@@ -2513,8 +2417,6 @@
         revealObserver.observe(element);
       });
     }
-
-    initLaunchGate();
 
     setTimeout(() => {
       clearIntroState();
