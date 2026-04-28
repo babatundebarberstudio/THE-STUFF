@@ -45,16 +45,6 @@
       </div>
     </div>
   </div>
-  <div class="announcement-bar" aria-label="Launch day sale announcement">
-    <div class="announcement-track">
-      <span>Free Shipping on Orders With Subtotal Over $35 </span>
-      <span>Free Shipping on Orders With Subtotal Over $35 </span>
-      <span>Free Shipping on Orders With Subtotal Over $35 </span>
-      <span>Free Shipping on Orders With Subtotal Over $35 </span>
-      <span>Free Shipping on Orders With Subtotal Over $35 </span>
-    </div>
-  </div>
-
   <header class="site-header">
     <div class="nav-wrap">
       <a href="#" id="brandToggle" class="brand" aria-label="Noire homepage">
@@ -382,7 +372,7 @@
           <p id="checkoutDiscountRow" class="checkout-discount hidden"><span id="checkoutDiscountLabel">Discount</span><strong id="checkoutDiscount">-$0.00</strong></p>
           <p><span>Subtotal</span><strong id="checkoutSubtotal">$0.00</strong></p>
           <p><span>Tax</span><strong id="checkoutTax">$0.00</strong></p>
-          <p><span>Shipping</span><strong id="checkoutShipping">$0.00</strong></p>
+          <p id="checkoutShippingRow"><span>Shipping</span><strong id="checkoutShipping">$0.00</strong></p>
           <p class="checkout-grand"><span>Total</span><strong id="checkoutTotal">$0.00</strong></p>
         </div>
         <div class="checkout-promo-block">
@@ -581,7 +571,12 @@
     <div class="cart-summary">
       <p><span>Cost</span><strong id="drawerSubtotal">$0.00</strong></p>
       <p><span>Tax</span><strong id="drawerTax">$0.00</strong></p>
-      <p><span>Shipping</span><strong id="drawerShipping">$0.00</strong></p>
+      <p><span>Shipping</span><strong id="drawerShipping">To be decided</strong></p>
+      <p id="freeShippingHint" class="free-shipping-hint">Add $35.00 to get free shipping</p>
+      <div class="free-shipping-track" aria-hidden="true">
+        <div id="freeShippingProgressBar" class="free-shipping-progress"></div>
+        <span id="freeShippingCheck" class="free-shipping-check hidden">✓</span>
+      </div>
       <p class="cart-total"><span>Total</span><strong id="drawerTotal">$0.00</strong></p>
     </div>
     <button id="checkoutButton" class="btn btn-primary cart-checkout-btn">Continue to Checkout</button>
@@ -777,6 +772,8 @@
     const LAUNCH_BYPASS_STORAGE_KEY = "noire_launch_bypass_v1";
     const LAUNCH_BYPASS_CODE = "NOIREADMINPRERELEASE";
     const LAUNCH_TARGET_MS = new Date("2026-04-25T14:00:00-05:00").getTime();
+    const FREE_SHIPPING_THRESHOLD = 35;
+    const STANDARD_SHIPPING_COST = 6.99;
     let appliedPromo = null;
     let authMode = "signin";
     let openAuthForPromoGate = false;
@@ -903,12 +900,16 @@
     const drawerSubtotal = document.getElementById("drawerSubtotal");
     const drawerTax = document.getElementById("drawerTax");
     const drawerShipping = document.getElementById("drawerShipping");
+    const freeShippingHint = document.getElementById("freeShippingHint");
+    const freeShippingProgressBar = document.getElementById("freeShippingProgressBar");
+    const freeShippingCheck = document.getElementById("freeShippingCheck");
     const drawerTotal = document.getElementById("drawerTotal");
 
     const checkoutItems = document.getElementById("checkoutItems");
     const checkoutSubtotal = document.getElementById("checkoutSubtotal");
     const checkoutTax = document.getElementById("checkoutTax");
     const checkoutShipping = document.getElementById("checkoutShipping");
+    const checkoutShippingRow = document.getElementById("checkoutShippingRow");
     const checkoutTotal = document.getElementById("checkoutTotal");
     const imageZoomOverlay = document.getElementById("imageZoomOverlay");
     const closeZoomButton = document.getElementById("closeZoomButton");
@@ -1236,7 +1237,15 @@
 
     function calculateTotals() {
       if (cart.length === 0) {
-        return { subtotal: 0, tax: 0, shipping: 0, total: 0, hasUnknownPrice: false, discountAmount: 0 };
+        return {
+          subtotal: 0,
+          tax: 0,
+          shipping: 0,
+          total: 0,
+          hasUnknownPrice: false,
+          discountAmount: 0,
+          qualifiesForFreeShipping: false
+        };
       }
 
       let baseSubtotal = 0;
@@ -1257,7 +1266,8 @@
           shipping: null,
           total: null,
           hasUnknownPrice: true,
-          discountAmount: null
+          discountAmount: null,
+          qualifiesForFreeShipping: false
         };
       }
 
@@ -1267,14 +1277,16 @@
       const discountAmount = percent > 0 ? baseSubtotal * (percent / 100) : 0;
       const subtotal = baseSubtotal - discountAmount;
       const tax = subtotal * 0.08;
-      const shipping = subtotal > 0 ? 6.99 : 0;
+      const qualifiesForFreeShipping = subtotal >= FREE_SHIPPING_THRESHOLD;
+      const shipping = subtotal > 0 ? (qualifiesForFreeShipping ? 0 : STANDARD_SHIPPING_COST) : 0;
       return {
         subtotal,
         tax,
         shipping,
         total: subtotal + tax + shipping,
         hasUnknownPrice: false,
-        discountAmount
+        discountAmount,
+        qualifiesForFreeShipping
       };
     }
 
@@ -1324,8 +1336,22 @@
       const totals = calculateTotals();
       drawerSubtotal.textContent = renderMoney(totals.subtotal);
       drawerTax.textContent = renderMoney(totals.tax);
-      drawerShipping.textContent = renderMoney(totals.shipping);
+      drawerShipping.textContent = totals.hasUnknownPrice ? "Unknown" : "To be decided";
       drawerTotal.textContent = renderMoney(totals.total);
+
+      if (freeShippingHint && freeShippingProgressBar && freeShippingCheck) {
+        const subtotal = totals.subtotal && !totals.hasUnknownPrice ? totals.subtotal : 0;
+        const remaining = Math.max(0, FREE_SHIPPING_THRESHOLD - subtotal);
+        const progress = Math.min(100, (subtotal / FREE_SHIPPING_THRESHOLD) * 100);
+        const isFree = totals.qualifiesForFreeShipping;
+
+        freeShippingHint.textContent = isFree
+          ? "Free shipping unlocked"
+          : "Add " + renderMoney(remaining) + " to get free shipping";
+        freeShippingProgressBar.style.width = progress + "%";
+        freeShippingProgressBar.classList.toggle("is-free", isFree);
+        freeShippingCheck.classList.toggle("hidden", !isFree);
+      }
 
       if (checkoutDiscountRow && totals.discountAmount > 0) {
         checkoutDiscountRow.classList.remove("hidden");
@@ -1339,6 +1365,9 @@
       checkoutTax.textContent = renderMoney(totals.tax);
       checkoutShipping.textContent = renderMoney(totals.shipping);
       checkoutTotal.textContent = renderMoney(totals.total);
+      if (checkoutShippingRow) {
+        checkoutShippingRow.classList.toggle("is-free-shipping", Boolean(totals.qualifiesForFreeShipping));
+      }
     }
 
     function renderAllCartUI() {

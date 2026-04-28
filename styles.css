@@ -39,7 +39,6 @@ svg {
   max-width: 100%;
 }
 
-body.launch-locked .announcement-bar,
 body.launch-locked .site-header,
 body.launch-locked main,
 body.launch-locked .site-footer {
@@ -162,35 +161,6 @@ a {
 .container {
   width: min(1120px, 92vw);
   margin: 0 auto;
-}
-
-.announcement-bar {
-  background: #111111;
-  color: #ffffff;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.18);
-  overflow: hidden;
-  white-space: nowrap;
-}
-
-.announcement-track {
-  display: inline-flex;
-  gap: 42px;
-  min-width: 100%;
-  padding: 8px 0;
-  font-size: 0.82rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  animation: announcementScroll 30s linear infinite;
-}
-
-@keyframes announcementScroll {
-  from {
-    transform: translateX(0);
-  }
-  to {
-    transform: translateX(-50%);
-  }
 }
 
 .site-header {
@@ -1086,6 +1056,11 @@ h2 {
   justify-content: space-between;
 }
 
+.checkout-totals p.is-free-shipping strong {
+  text-decoration: line-through;
+  opacity: 0.72;
+}
+
 .checkout-grand {
   border-top: 1px solid var(--line);
   margin-top: 10px;
@@ -1228,6 +1203,44 @@ h2 {
   margin: 6px 0;
   display: flex;
   justify-content: space-between;
+}
+
+.free-shipping-hint {
+  margin: 6px 0 4px;
+  display: block;
+  color: var(--muted);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.free-shipping-track {
+  position: relative;
+  height: 10px;
+  border-radius: 999px;
+  background: #eadfd4;
+  overflow: hidden;
+}
+
+.free-shipping-progress {
+  height: 100%;
+  width: 0;
+  background: var(--surface-sand);
+  transition: width 0.24s ease, background-color 0.24s ease;
+}
+
+.free-shipping-progress.is-free {
+  background: #1f9d47;
+}
+
+.free-shipping-check {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 800;
+  pointer-events: none;
 }
 
 .cart-total {
@@ -1543,11 +1556,6 @@ h2 {
 @media (max-width: 900px) {
   .brand-logo {
     height: 52px;
-  }
-
-  .announcement-track {
-    font-size: 0.73rem;
-    gap: 28px;
   }
 
   .main-nav {
