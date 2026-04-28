@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Noire — Promo codes (admin)</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 520px; margin: 40px auto; padding: 0 16px; }
+    label { display: block; margin-top: 12px; font-weight: 600; }
+    input { width: 100%; box-sizing: border-box; margin-top: 4px; padding: 8px; }
+    button { margin-top: 16px; padding: 10px 16px; cursor: pointer; }
+    pre { background: #f4f4f4; padding: 12px; overflow: auto; font-size: 12px; }
+    .hint { color: #555; font-size: 14px; }
+  </style>
+</head>
+<body>
+  <h1>Promo codes</h1>
+  <p class="hint">Set <code>ADMIN_PROMO_SECRET</code> on your server. Paste the same secret below. This page calls your deployed API (<code>/api/admin/promos</code>).</p>
+  <label for="baseUrl">Site base URL</label>
+  <input id="baseUrl" type="url" placeholder="https://your-app.onrender.com">
+  <label for="adminSecret">Admin secret</label>
+  <input id="adminSecret" type="password" autocomplete="off">
+  <label for="code">Code</label>
+  <input id="code" type="text" placeholder="LAUNCHDAY" autocomplete="off">
+  <label for="percentOff">Percent off (1–100)</label>
+  <input id="percentOff" type="number" min="1" max="100" value="30">
+  <label for="perUserLimit">Uses per account</label>
+  <input id="perUserLimit" type="number" min="1" value="1">
+  <label for="maxTotal">Max total uses (empty = unlimited)</label>
+  <input id="maxTotal" type="number" min="0" placeholder="leave empty for unlimited">
+  <label><input id="active" type="checkbox" checked> Active</label>
+  <button type="button" id="saveBtn">Save promo</button>
+  <button type="button" id="listBtn">List promos</button>
+  <pre id="out"></pre>
+  <script>
+    const out = document.getElementById("out");
+    function log(msg) {
+      out.textContent = typeof msg === "string" ? msg : JSON.stringify(msg, null, 2);
+    }
+    document.getElementById("saveBtn").addEventListener("click", async () => {
+      const base = document.getElementById("baseUrl").value.replace(/\/$/, "");
+      const secret = document.getElementById("adminSecret").value.trim();
+      const code = document.getElementById("code").value.trim();
+      const percentOff = Number(document.getElementById("percentOff").value);
+      const perUserLimit = parseInt(document.getElementById("perUserLimit").value, 10) || 1;
+      const maxRaw = document.getElementById("maxTotal").value.trim();
+      const maxTotalRedemptions = maxRaw === "" ? null : parseInt(maxRaw, 10);
+      const active = document.getElementById("active").checked;
+      if (!base || !secret || !code) {
+        log("Fill base URL, secret, and code.");
+        return;
+      }
+      const res = await fetch(base + "/api/admin/promos", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Admin-Secret": secret
+        },
+        body: JSON.stringify({ code, percentOff, perUserLimit, maxTotalRedemptions, active })
+      });
+      const body = await res.text();
+      try {
+        log(JSON.parse(body));
+      } catch {
+        log(res.status + " " + body);
+      }
+    });
+    document.getElementById("listBtn").addEventListener("click", async () => {
+      const base = document.getElementById("baseUrl").value.replace(/\/$/, "");
+      const secret = document.getElementById("adminSecret").value.trim();
+      if (!base || !secret) {
+        log("Fill base URL and secret.");
+        return;
+      }
+      const res = await fetch(base + "/api/admin/promos", {
+        headers: { "X-Admin-Secret": secret }
+      });
+      const body = await res.text();
+      try {
+        log(JSON.parse(body));
+      } catch {
+        log(res.status + " " + body);
+      }
+    });
+  </script>
+</body>
+</html>
