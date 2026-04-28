@@ -1312,32 +1312,29 @@
       drawerShipping.textContent = totals.hasUnknownPrice ? "Unknown" : "To be decided";
       drawerTotal.textContent = renderMoney(totals.total);
 
-      if (freeShippingHint && freeShippingProgressBar && freeShippingCheck) {
-        const subtotal = totals.subtotal && !totals.hasUnknownPrice ? totals.subtotal : 0;
-        const remaining = Math.max(0, FREE_SHIPPING_THRESHOLD - subtotal);
-        const progress = Math.min(100, (subtotal / FREE_SHIPPING_THRESHOLD) * 100);
-        const isFree = totals.qualifiesForFreeShipping;
+      const subtotalForProgress = totals.subtotal && !totals.hasUnknownPrice ? totals.subtotal : 0;
+      const remainingForFreeShipping = Math.max(0, FREE_SHIPPING_THRESHOLD - subtotalForProgress);
+      const rawProgress = (subtotalForProgress / FREE_SHIPPING_THRESHOLD) * 100;
+      const cappedProgress = Math.max(0, Math.min(100, rawProgress));
+      const progress = subtotalForProgress > 0 && cappedProgress < 4 ? 4 : cappedProgress;
+      const isFreeShippingUnlocked = totals.qualifiesForFreeShipping;
 
-        freeShippingHint.textContent = isFree
+      if (freeShippingHint && freeShippingProgressBar && freeShippingCheck) {
+        freeShippingHint.textContent = isFreeShippingUnlocked
           ? "Free shipping unlocked"
-          : "Add " + renderMoney(remaining) + " to get free shipping";
+          : "Add " + renderMoney(remainingForFreeShipping) + " to get free shipping";
         freeShippingProgressBar.style.width = progress + "%";
-        freeShippingProgressBar.classList.toggle("is-free", isFree);
-        freeShippingCheck.classList.toggle("hidden", !isFree);
+        freeShippingProgressBar.classList.toggle("is-free", isFreeShippingUnlocked);
+        freeShippingCheck.classList.toggle("hidden", !isFreeShippingUnlocked);
       }
 
       if (checkoutFreeShippingHint && checkoutFreeShippingProgressBar && checkoutFreeShippingCheck) {
-        const subtotal = totals.subtotal && !totals.hasUnknownPrice ? totals.subtotal : 0;
-        const remaining = Math.max(0, FREE_SHIPPING_THRESHOLD - subtotal);
-        const progress = Math.min(100, (subtotal / FREE_SHIPPING_THRESHOLD) * 100);
-        const isFree = totals.qualifiesForFreeShipping;
-
-        checkoutFreeShippingHint.textContent = isFree
+        checkoutFreeShippingHint.textContent = isFreeShippingUnlocked
           ? "Free shipping unlocked"
-          : "Add " + renderMoney(remaining) + " to get free shipping";
+          : "Add " + renderMoney(remainingForFreeShipping) + " to get free shipping";
         checkoutFreeShippingProgressBar.style.width = progress + "%";
-        checkoutFreeShippingProgressBar.classList.toggle("is-free", isFree);
-        checkoutFreeShippingCheck.classList.toggle("hidden", !isFree);
+        checkoutFreeShippingProgressBar.classList.toggle("is-free", isFreeShippingUnlocked);
+        checkoutFreeShippingCheck.classList.toggle("hidden", !isFreeShippingUnlocked);
       }
 
       if (checkoutDiscountRow && totals.discountAmount > 0) {

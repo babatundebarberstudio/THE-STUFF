@@ -1111,7 +1111,8 @@ h2 {
   position: relative;
   height: 10px;
   border-radius: 999px;
-  background: #eadfd4;
+  background: #d9c6b3;
+  border: 1px solid #c8b39d;
   overflow: hidden;
 }
 
