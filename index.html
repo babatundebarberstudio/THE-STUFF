@@ -350,7 +350,6 @@
           <p id="checkoutFreeShippingHint" class="free-shipping-hint">Add $35.00 to get free shipping</p>
           <div class="free-shipping-track" aria-hidden="true">
             <div id="checkoutFreeShippingProgressBar" class="free-shipping-progress"></div>
-            <span id="checkoutFreeShippingCheck" class="free-shipping-check hidden">✓</span>
           </div>
           <p class="checkout-grand"><span>Total</span><strong id="checkoutTotal">$0.00</strong></p>
         </div>
@@ -554,7 +553,6 @@
       <p id="freeShippingHint" class="free-shipping-hint">Add $35.00 to get free shipping</p>
       <div class="free-shipping-track" aria-hidden="true">
         <div id="freeShippingProgressBar" class="free-shipping-progress"></div>
-        <span id="freeShippingCheck" class="free-shipping-check hidden">✓</span>
       </div>
       <p class="cart-total"><span>Total</span><strong id="drawerTotal">$0.00</strong></p>
     </div>
@@ -872,7 +870,6 @@
     const drawerShipping = document.getElementById("drawerShipping");
     const freeShippingHint = document.getElementById("freeShippingHint");
     const freeShippingProgressBar = document.getElementById("freeShippingProgressBar");
-    const freeShippingCheck = document.getElementById("freeShippingCheck");
     const drawerTotal = document.getElementById("drawerTotal");
 
     const checkoutItems = document.getElementById("checkoutItems");
@@ -882,7 +879,6 @@
     const checkoutShippingRow = document.getElementById("checkoutShippingRow");
     const checkoutFreeShippingHint = document.getElementById("checkoutFreeShippingHint");
     const checkoutFreeShippingProgressBar = document.getElementById("checkoutFreeShippingProgressBar");
-    const checkoutFreeShippingCheck = document.getElementById("checkoutFreeShippingCheck");
     const checkoutTotal = document.getElementById("checkoutTotal");
     const imageZoomOverlay = document.getElementById("imageZoomOverlay");
     const closeZoomButton = document.getElementById("closeZoomButton");
@@ -1319,22 +1315,20 @@
       const progress = subtotalForProgress > 0 && cappedProgress < 4 ? 4 : cappedProgress;
       const isFreeShippingUnlocked = totals.qualifiesForFreeShipping;
 
-      if (freeShippingHint && freeShippingProgressBar && freeShippingCheck) {
+      if (freeShippingHint && freeShippingProgressBar) {
         freeShippingHint.textContent = isFreeShippingUnlocked
           ? "Free shipping unlocked"
           : "Add " + renderMoney(remainingForFreeShipping) + " to get free shipping";
         freeShippingProgressBar.style.width = progress + "%";
         freeShippingProgressBar.classList.toggle("is-free", isFreeShippingUnlocked);
-        freeShippingCheck.classList.toggle("hidden", !isFreeShippingUnlocked);
       }
 
-      if (checkoutFreeShippingHint && checkoutFreeShippingProgressBar && checkoutFreeShippingCheck) {
+      if (checkoutFreeShippingHint && checkoutFreeShippingProgressBar) {
         checkoutFreeShippingHint.textContent = isFreeShippingUnlocked
           ? "Free shipping unlocked"
           : "Add " + renderMoney(remainingForFreeShipping) + " to get free shipping";
         checkoutFreeShippingProgressBar.style.width = progress + "%";
         checkoutFreeShippingProgressBar.classList.toggle("is-free", isFreeShippingUnlocked);
-        checkoutFreeShippingCheck.classList.toggle("hidden", !isFreeShippingUnlocked);
       }
 
       if (checkoutDiscountRow && totals.discountAmount > 0) {
