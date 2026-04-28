@@ -550,7 +550,7 @@
     <div class="cart-summary">
       <p><span>Cost</span><strong id="drawerSubtotal">$0.00</strong></p>
       <p><span>Tax</span><strong id="drawerTax">$0.00</strong></p>
-      <p><span>Shipping</span><strong id="drawerShipping">To be decided</strong></p>
+      <p><span>Shipping</span><strong id="drawerShipping">---</strong></p>
       <p id="freeShippingHint" class="free-shipping-hint">Add $35.00 to get free shipping</p>
       <div class="free-shipping-track" aria-hidden="true">
         <div id="freeShippingProgressBar" class="free-shipping-progress"></div>
@@ -1309,7 +1309,7 @@
       const totals = calculateTotals();
       drawerSubtotal.textContent = renderMoney(totals.subtotal);
       drawerTax.textContent = renderMoney(totals.tax);
-      drawerShipping.textContent = totals.hasUnknownPrice ? "Unknown" : "To be decided";
+      drawerShipping.textContent = totals.hasUnknownPrice ? "Unknown" : "---";
       drawerTotal.textContent = renderMoney(totals.total);
 
       const subtotalForProgress = totals.subtotal && !totals.hasUnknownPrice ? totals.subtotal : 0;
