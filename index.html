@@ -371,7 +371,11 @@
           <input id="orderEmail" name="email" type="email" required>
           <label for="orderPhone">Phone</label>
           <input id="orderPhone" name="phone" type="tel" required>
-          <div class="checkout-address-grid">
+          <label class="order-pickup-option">
+            <input id="orderPickup" name="pickup" type="checkbox">
+            Pick up in Evanston
+          </label>
+          <div id="orderAddressGrid" class="checkout-address-grid">
             <div class="span-2">
               <label for="orderAddressLine1">Address line 1</label>
               <input id="orderAddressLine1" name="addressLine1" type="text" required autocomplete="address-line1" placeholder="Street address, P.O. box">
@@ -892,6 +896,8 @@
     const orderName = document.getElementById("orderName");
     const orderEmail = document.getElementById("orderEmail");
     const orderPhone = document.getElementById("orderPhone");
+    const orderPickup = document.getElementById("orderPickup");
+    const orderAddressGrid = document.getElementById("orderAddressGrid");
     const orderAddressLine1 = document.getElementById("orderAddressLine1");
     const orderAddressLine2 = document.getElementById("orderAddressLine2");
     const orderCity = document.getElementById("orderCity");
@@ -1247,7 +1253,8 @@
       const subtotal = baseSubtotal - discountAmount;
       const tax = subtotal * 0.08;
       const qualifiesForFreeShipping = subtotal >= FREE_SHIPPING_THRESHOLD;
-      const shipping = subtotal > 0 ? (qualifiesForFreeShipping ? 0 : STANDARD_SHIPPING_COST) : 0;
+      const isPickupSelected = Boolean(orderPickup && orderPickup.checked);
+      const shipping = isPickupSelected ? 0 : (subtotal > 0 ? (qualifiesForFreeShipping ? 0 : STANDARD_SHIPPING_COST) : 0);
       return {
         subtotal,
         tax,
@@ -1306,7 +1313,7 @@
       drawerSubtotal.textContent = renderMoney(totals.subtotal);
       drawerTax.textContent = renderMoney(totals.tax);
       drawerShipping.textContent = totals.hasUnknownPrice ? "Unknown" : "---";
-      drawerTotal.textContent = renderMoney(totals.total);
+      drawerTotal.textContent = totals.hasUnknownPrice ? "Unknown" : "---";
 
       const subtotalForProgress = totals.subtotal && !totals.hasUnknownPrice ? totals.subtotal : 0;
       const remainingForFreeShipping = Math.max(0, FREE_SHIPPING_THRESHOLD - subtotalForProgress);
@@ -1353,6 +1360,37 @@
       renderCartItems(checkoutItems);
       renderTotals();
       updateCartBadge();
+    }
+
+    function syncPickupUi() {
+      const pickupSelected = Boolean(orderPickup && orderPickup.checked);
+      if (orderAddressGrid) {
+        orderAddressGrid.classList.toggle("hidden", pickupSelected);
+      }
+
+      const requiredAddressFields = [orderAddressLine1, orderCity, orderState, orderPostal];
+      const allAddressFields = [orderAddressLine1, orderAddressLine2, orderCity, orderState, orderPostal, orderCountry];
+
+      requiredAddressFields.forEach((field) => {
+        if (!field) return;
+        field.required = !pickupSelected;
+      });
+
+      allAddressFields.forEach((field) => {
+        if (!field) return;
+        field.disabled = pickupSelected;
+      });
+
+      if (pickupSelected) {
+        [orderAddressLine1, orderAddressLine2, orderCity, orderState, orderPostal].forEach((field) => {
+          if (!field) return;
+          field.value = "";
+        });
+      } else if (orderCountry && !orderCountry.value.trim()) {
+        orderCountry.value = "United States";
+      }
+
+      renderAllCartUI();
     }
 
     async function getCheckoutAuthHeaders() {
@@ -1819,6 +1857,7 @@
           persistCart();
           renderAllCartUI();
           orderForm.reset();
+          syncPickupUi();
           showCheckoutSuccessWithDetails(
             "Payment successful! Order " + (data.orderNumber || orderNumberFromUrl) + " is confirmed.",
             {
@@ -2240,6 +2279,7 @@
         const customerName = orderName.value.trim();
         const customerEmail = orderEmail.value.trim().toLowerCase();
         const customerPhone = orderPhone.value.trim();
+        const pickupSelected = Boolean(orderPickup && orderPickup.checked);
         const line1 = orderAddressLine1.value.trim();
         const line2 = orderAddressLine2.value.trim();
         const city = orderCity.value.trim();
@@ -2247,7 +2287,11 @@
         const postal = orderPostal.value.trim();
         const country = orderCountry.value.trim() || "United States";
         const notes = orderNotes.value.trim();
-        if (!customerName || !customerEmail || !customerPhone || !line1 || !city || !state || !postal) {
+        if (!customerName || !customerEmail || !customerPhone) {
+          showOrderMessage("Please fill in all required contact fields.", true);
+          return;
+        }
+        if (!pickupSelected && (!line1 || !city || !state || !postal)) {
           showOrderMessage("Please fill in all required delivery fields.", true);
           return;
         }
@@ -2257,12 +2301,13 @@
             name: customerName,
             email: customerEmail,
             phone: customerPhone,
-            addressLine1: line1,
-            addressLine2: line2,
-            city,
-            state,
-            postalCode: postal,
-            country,
+            isPickup: pickupSelected,
+            addressLine1: pickupSelected ? "" : line1,
+            addressLine2: pickupSelected ? "" : line2,
+            city: pickupSelected ? "" : city,
+            state: pickupSelected ? "" : state,
+            postalCode: pickupSelected ? "" : postal,
+            country: pickupSelected ? "" : country,
             notes
           },
           cart: cart.map((item) => ({
@@ -2322,6 +2367,10 @@
     applyPromoButton.addEventListener("click", () => {
       void applyPromoFromInput();
     });
+    if (orderPickup) {
+      orderPickup.addEventListener("change", syncPickupUi);
+      syncPickupUi();
+    }
     clearPromoButton.addEventListener("click", () => {
       clearAppliedPromo();
     });

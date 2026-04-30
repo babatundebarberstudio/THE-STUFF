@@ -161,7 +161,7 @@ function computeCartSubtotal(cart) {
   return { subtotal, hasUnknown };
 }
 
-function computeTotalsWithDiscount(cart, discountPercent) {
+function computeTotalsWithDiscount(cart, discountPercent, isPickup) {
   const { subtotal, hasUnknown } = computeCartSubtotal(cart);
   if (hasUnknown) {
     return { subtotal: null, tax: null, shipping: null, total: null, hasUnknownPrice: true };
@@ -169,7 +169,8 @@ function computeTotalsWithDiscount(cart, discountPercent) {
   const factor = discountPercent > 0 ? 1 - Math.min(100, discountPercent) / 100 : 1;
   const discountedSubtotal = subtotal * factor;
   const tax = discountedSubtotal * 0.08;
-  const shipping = discountedSubtotal > 0 ? 6.99 : 0;
+  const qualifiesForFreeShipping = discountedSubtotal >= 35;
+  const shipping = isPickup ? 0 : (discountedSubtotal > 0 ? (qualifiesForFreeShipping ? 0 : 6.99) : 0);
   return {
     subtotal: discountedSubtotal,
     tax,
@@ -383,7 +384,8 @@ app.post("/api/create-checkout-session", async (req, res) => {
     const customerName = String(customer.name || "").trim();
     const customerEmail = String(customer.email || "").trim().toLowerCase();
     const customerPhone = String(customer.phone || "").trim();
-    const shippingAddress = buildShippingAddressString(customer);
+    const isPickup = Boolean(customer.isPickup);
+    const shippingAddress = isPickup ? "Pickup - Evanston" : buildShippingAddressString(customer);
     const notes = String(customer.notes || "").trim();
     if (!customerName || !customerEmail || !customerPhone || !shippingAddress) {
       return res.status(400).json({ error: "Missing required customer fields." });
@@ -405,7 +407,7 @@ app.post("/api/create-checkout-session", async (req, res) => {
       appliedPromoCode = promoResult.code;
     }
 
-    const serverTotals = computeTotalsWithDiscount(cart, discountPercent);
+    const serverTotals = computeTotalsWithDiscount(cart, discountPercent, isPickup);
     if (serverTotals.hasUnknownPrice || serverTotals.total === null) {
       return res.status(400).json({ error: "Invalid cart pricing." });
     }
@@ -463,6 +465,7 @@ app.post("/api/create-checkout-session", async (req, res) => {
       customer_name: customerName,
       customer_email: customerEmail,
       customer_phone: customerPhone,
+      is_pickup: isPickup,
       shipping_address: shippingAddress,
       notes,
       subtotal,

@@ -979,6 +979,18 @@ h2 {
   font-weight: 700;
 }
 
+.order-pickup-option {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+}
+
+.order-pickup-option input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+}
+
 .order-form input,
 .order-form textarea {
   width: 100%;

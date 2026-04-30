@@ -4,6 +4,7 @@ create table if not exists public.orders (
   customer_name text not null,
   customer_email text not null,
   customer_phone text not null,
+  is_pickup boolean,
   shipping_address text not null,
   notes text,
   subtotal numeric(10,2) not null,
@@ -29,6 +30,7 @@ create table if not exists public.order_items (
 );
 
 alter table public.orders
+  add column if not exists is_pickup boolean,
   add column if not exists stripe_session_id text,
   add column if not exists paid_at timestamptz;
 
