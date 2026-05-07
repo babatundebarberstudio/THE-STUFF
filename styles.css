@@ -234,8 +234,8 @@ a {
 }
 
 .hero-image-wrap {
-  width: min(860px, 88%);
-  margin: 0 auto 24px;
+  width: 100%;
+  margin: 0 0 24px;
   border-radius: 0;
   overflow: visible;
   border: 0;
@@ -245,8 +245,8 @@ a {
 .hero-image {
   display: block;
   width: 100%;
+  height: auto;
   max-height: none;
-  object-fit: contain;
   opacity: 1;
 }
 
