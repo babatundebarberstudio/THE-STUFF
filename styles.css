@@ -1639,10 +1639,10 @@ h2 {
   }
 
   .hero-image-cta .btn {
-    min-width: 122px;
-    height: 38px;
-    font-size: 0.9rem;
-    padding: 0 14px;
+    min-width: 96px;
+    height: 30px;
+    font-size: 0.78rem;
+    padding: 0 10px;
   }
 
   .product-detail-card {
