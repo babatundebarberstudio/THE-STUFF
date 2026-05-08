@@ -1,5 +1,6 @@
 :root {
-  --bg: #f8f8f8;
+  /* Page canvas */
+  --bg: #eac6c6;
   --surface: #ffffff;
   --text: #121212;
   --muted: #5f5f5f;
@@ -8,12 +9,18 @@
   --line: #e8e8e8;
   /* Shared header, mission band, and footer tint (lighter than previous header) */
   --surface-sand: #f3dcc8;
+  /* Matches .nav-wrap horizontal padding so hero art lines up with logo → cart */
+  --nav-h-pad: clamp(14px, 3vw, 44px);
 }
 
 *,
 *::before,
 *::after {
   box-sizing: border-box;
+}
+
+html {
+  background-color: var(--bg);
 }
 
 html,
@@ -28,8 +35,12 @@ body {
 body {
   font-family: "DM Sans", sans-serif;
   color: var(--text);
-  background: var(--bg);
+  background-color: var(--bg);
   line-height: 1.5;
+}
+
+main {
+  background-color: var(--bg);
 }
 
 img,
@@ -62,7 +73,7 @@ a {
   align-items: center;
   gap: 20px;
   width: 100%;
-  padding: 0 clamp(14px, 3vw, 44px);
+  padding: 0 var(--nav-h-pad);
 }
 
 .nav-actions {
@@ -229,17 +240,31 @@ a {
 }
 
 .hero {
-  padding: 30px 0 88px;
+  padding: 0 0 72px;
+  margin: 0;
   text-align: center;
+  background-color: var(--bg);
 }
 
 .hero-image-wrap {
   width: 100%;
   margin: 0 0 24px;
+  padding: 14px var(--nav-h-pad) 0;
   border-radius: 0;
   overflow: visible;
   border: 0;
   background: transparent;
+}
+
+.hero-image-frame {
+  border-radius: clamp(18px, 2.8vw, 32px);
+  overflow: hidden;
+  background: var(--surface);
+  border: 1px solid rgba(210, 160, 175, 0.28);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.75) inset,
+    0 10px 36px rgba(70, 32, 48, 0.1),
+    0 2px 8px rgba(70, 32, 48, 0.06);
 }
 
 .hero-image {
@@ -304,7 +329,7 @@ h1 {
   margin: 0 auto;
   max-width: 900px;
   font-size: clamp(1.35rem, 3.2vw, 3rem);
-  color: var(--accent);
+  color: var(--text);
   font-weight: 800;
   line-height: 1.06;
 }
@@ -1496,7 +1521,7 @@ h2 {
   }
 
   .hero {
-    padding-top: 20px;
+    padding-top: 0;
   }
 
   .product-grid {
