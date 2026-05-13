@@ -25,7 +25,7 @@ const {
   TELNYX_FROM_NUMBER,
   TELNYX_MESSAGING_PROFILE_ID,
   FEEDBACK_URL = `${FRONTEND_URL}/#contact-us`,
-  ABANDONED_ORDER_CLEANUP_SECONDS = "30"
+  ABANDONED_ORDER_CLEANUP_SECONDS = "7200"
 } = process.env;
 
 if (!STRIPE_SECRET_KEY || !SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
@@ -34,7 +34,7 @@ if (!STRIPE_SECRET_KEY || !SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
 
 const stripe = new Stripe(STRIPE_SECRET_KEY);
 const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
-const abandonedOrderCleanupSeconds = Math.max(30, Number(ABANDONED_ORDER_CLEANUP_SECONDS) || 30);
+const abandonedOrderCleanupSeconds = Math.max(30, Number(ABANDONED_ORDER_CLEANUP_SECONDS) || 7200);
 
 function normalizeOrigin(value) {
   return String(value || "").trim().replace(/\/+$/, "");
