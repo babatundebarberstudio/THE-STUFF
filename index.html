@@ -2349,6 +2349,32 @@
         }
 
         const checkoutData = await checkoutResponse.json();
+        if (checkoutData.freeOrder) {
+          cart.length = 0;
+          clearAppliedPromo();
+          persistCart();
+          renderAllCartUI();
+          orderForm.reset();
+          syncPickupUi();
+          showCheckoutSuccessWithDetails(
+            "Order " + (checkoutData.orderNumber || "received") + " is confirmed.",
+            {
+              orderNumber: checkoutData.orderNumber,
+              name: checkoutData.customerName,
+              email: checkoutData.customerEmail,
+              phone: checkoutData.customerPhone,
+              address: checkoutData.shippingAddress,
+              discountLabel: checkoutData.discountPercent && Number(checkoutData.discountPercent) > 0
+                ? "Discount" + (checkoutData.promoCode ? " (" + checkoutData.promoCode + " " + Number(checkoutData.discountPercent).toFixed(0) + "%)" : " (" + Number(checkoutData.discountPercent).toFixed(0) + "%)")
+                : "",
+              subtotal: checkoutData.subtotal !== null && checkoutData.subtotal !== undefined ? "$" + Number(checkoutData.subtotal).toFixed(2) : "",
+              tax: checkoutData.tax !== null && checkoutData.tax !== undefined ? "$" + Number(checkoutData.tax).toFixed(2) : "",
+              shippingCost: checkoutData.shippingCost !== null && checkoutData.shippingCost !== undefined ? "$" + Number(checkoutData.shippingCost).toFixed(2) : "",
+              total: checkoutData.total !== null && checkoutData.total !== undefined ? "$" + Number(checkoutData.total).toFixed(2) : ""
+            }
+          );
+          return;
+        }
         if (!checkoutData.sessionId) {
           showOrderMessage("Payment session failed to initialize.", true);
           return;

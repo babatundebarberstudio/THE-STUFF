@@ -302,6 +302,24 @@ function createOrderNumber() {
   return "NOIRE-" + timestamp.slice(0, 15);
 }
 
+function getChicagoTimestamp(date = new Date()) {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: "America/Chicago",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false,
+    hourCycle: "h23"
+  }).formatToParts(date).reduce((acc, part) => {
+    if (part.type !== "literal") acc[part.type] = part.value;
+    return acc;
+  }, {});
+  return `${parts.year}-${parts.month}-${parts.day} ${parts.hour}:${parts.minute}:${parts.second}`;
+}
+
 app.post("/api/promo/validate", async (req, res) => {
   try {
     const user = await getUserFromRequest(req);
@@ -460,44 +478,11 @@ app.post("/api/create-checkout-session", async (req, res) => {
     }
 
     const orderNumber = createOrderNumber();
-    const orderInsert = {
-      order_number: orderNumber,
-      customer_name: customerName,
-      customer_email: customerEmail,
-      customer_phone: customerPhone,
-      is_pickup: isPickup,
-      shipping_address: shippingAddress,
-      notes,
-      subtotal,
-      tax,
-      shipping_cost: shippingCost,
-      total,
-      status: "pending",
-      owner_notification_email: customerEmail
-    };
-    if (appliedPromoCode) {
-      orderInsert.promo_code = appliedPromoCode;
-      orderInsert.discount_percent = discountPercent;
-      orderInsert.shopper_user_id = user.id;
-    }
-
-    const { data: orderRow, error: orderError } = await supabaseAdmin
-      .from("orders")
-      .insert(orderInsert)
-      .select("id, order_number")
-      .single();
-
-    if (orderError || !orderRow) {
-      console.error("Failed to create order row:", orderError);
-      return res.status(500).json({ error: "Could not create order." });
-    }
-
-    const orderItemsRows = cart.map((item) => {
+    const orderItems = cart.map((item) => {
       const quantity = Math.max(1, Number(item.quantity) || 1);
       const unitPrice = Number(item.price) || 0;
       const variantText = item.color ? ` (${item.color})` : "";
       return {
-        order_id: orderRow.id,
         product_slug: String(item.slug || "unknown"),
         product_name: `${item.name || "Product"}${variantText}`,
         unit_price: unitPrice,
@@ -505,11 +490,103 @@ app.post("/api/create-checkout-session", async (req, res) => {
         line_total: unitPrice * quantity
       };
     });
+    const productsOrdered = orderItems
+      .map((item) => `${item.product_name} x${item.quantity}`)
+      .join(", ");
+    const orderInsert = {
+      order_number: orderNumber,
+      customer_name: customerName,
+      customer_email: customerEmail,
+      customer_phone: customerPhone,
+      chicago_time: getChicagoTimestamp(),
+      is_pickup: isPickup,
+      shipping_address: shippingAddress,
+      notes,
+      subtotal,
+      tax,
+      shipping_cost: shippingCost,
+      total,
+      products_ordered: productsOrdered,
+      status: "pending",
+      owner_notification_email: customerEmail
+    };
+    if (appliedPromoCode) {
+      orderInsert.promo_code = appliedPromoCode;
+      orderInsert.discount_percent = discountPercent;
+      orderInsert.shopper_user_id = user.id;
+    } else {
+      orderInsert.promo_code = null;
+      orderInsert.discount_percent = null;
+      orderInsert.shopper_user_id = null;
+    }
 
-    const { error: orderItemsError } = await supabaseAdmin.from("order_items").insert(orderItemsRows);
-    if (orderItemsError) {
-      console.error("Failed to create order item rows:", orderItemsError);
-      return res.status(500).json({ error: "Could not save order items." });
+    const { data: existingPendingOrder, error: existingOrderError } = await supabaseAdmin
+      .from("orders")
+      .select("id, order_number")
+      .eq("customer_email", customerEmail)
+      .eq("status", "pending")
+      .is("paid_at", null)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (existingOrderError) {
+      console.error("Failed to check for existing pending order:", existingOrderError);
+      return res.status(500).json({ error: "Could not check existing order." });
+    }
+
+    let orderRow;
+    let orderError;
+    if (existingPendingOrder?.id) {
+      const updateResponse = await supabaseAdmin
+        .from("orders")
+        .update({
+          ...orderInsert,
+          order_number: existingPendingOrder.order_number,
+          stripe_session_id: null
+        })
+        .eq("id", existingPendingOrder.id)
+        .select("id, order_number")
+        .single();
+      orderRow = updateResponse.data;
+      orderError = updateResponse.error;
+    } else {
+      const insertResponse = await supabaseAdmin
+        .from("orders")
+        .insert(orderInsert)
+        .select("id, order_number")
+        .single();
+      orderRow = insertResponse.data;
+      orderError = insertResponse.error;
+    }
+
+    if (orderError || !orderRow) {
+      console.error("Failed to save order row:", orderError);
+      return res.status(500).json({ error: "Could not save order." });
+    }
+
+    if (total <= 0) {
+      const { error: paidError, updated } = await markOrderPaid(orderRow.id, null);
+      if (paidError || !updated) {
+        console.error("Failed to confirm free order:", paidError);
+        return res.status(500).json({ error: "Could not confirm free order." });
+      }
+      await sendCustomerOrderSms(orderRow.id);
+      return res.json({
+        freeOrder: true,
+        orderNumber: orderRow.order_number,
+        paymentStatus: "no_payment_required",
+        customerName,
+        customerEmail,
+        customerPhone,
+        shippingAddress,
+        promoCode: appliedPromoCode || "",
+        discountPercent,
+        subtotal,
+        tax,
+        shippingCost,
+        total
+      });
     }
 
     const session = await stripe.checkout.sessions.create({
@@ -716,7 +793,7 @@ async function markOrderPaid(orderId, sessionId) {
     .update(updatePayload)
     .eq("id", orderId)
     .neq("status", "paid")
-    .select("id");
+    .select("id, customer_email");
 
   // Backward compatible if older schema doesn't include paid_at/stripe_session_id yet.
   if (response.error && response.error.code === "PGRST204") {
@@ -728,18 +805,36 @@ async function markOrderPaid(orderId, sessionId) {
       .update({ status: "paid" })
       .eq("id", orderId)
       .neq("status", "paid")
-      .select("id");
+      .select("id, customer_email");
   }
 
   const updated = Array.isArray(response.data) && response.data.length > 0;
   if (updated) {
     await recordPromoRedemptionIfNeeded(orderId);
+    await cleanupOtherPendingOrdersForCustomer(response.data[0]?.customer_email, orderId);
   }
 
   return {
     error: response.error,
     updated
   };
+}
+
+async function cleanupOtherPendingOrdersForCustomer(customerEmail, keepOrderId) {
+  const email = String(customerEmail || "").trim().toLowerCase();
+  if (!email || !keepOrderId) return;
+
+  const { error } = await supabaseAdmin
+    .from("orders")
+    .delete()
+    .eq("customer_email", email)
+    .eq("status", "pending")
+    .is("paid_at", null)
+    .neq("id", keepOrderId);
+
+  if (error) {
+    console.warn("Could not remove older unpaid duplicate orders:", error.message || error);
+  }
 }
 
 async function resolveOrderForSession(session) {
