@@ -24,7 +24,8 @@ const {
   TELNYX_API_KEY,
   TELNYX_FROM_NUMBER,
   TELNYX_MESSAGING_PROFILE_ID,
-  FEEDBACK_URL = `${FRONTEND_URL}/#contact-us`
+  FEEDBACK_URL = `${FRONTEND_URL}/#contact-us`,
+  ABANDONED_ORDER_CLEANUP_SECONDS = "30"
 } = process.env;
 
 if (!STRIPE_SECRET_KEY || !SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
@@ -33,6 +34,7 @@ if (!STRIPE_SECRET_KEY || !SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
 
 const stripe = new Stripe(STRIPE_SECRET_KEY);
 const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+const abandonedOrderCleanupSeconds = Math.max(30, Number(ABANDONED_ORDER_CLEANUP_SECONDS) || 30);
 
 function normalizeOrigin(value) {
   return String(value || "").trim().replace(/\/+$/, "");
@@ -565,30 +567,6 @@ app.post("/api/create-checkout-session", async (req, res) => {
       return res.status(500).json({ error: "Could not save order." });
     }
 
-    if (total <= 0) {
-      const { error: paidError, updated } = await markOrderPaid(orderRow.id, null);
-      if (paidError || !updated) {
-        console.error("Failed to confirm free order:", paidError);
-        return res.status(500).json({ error: "Could not confirm free order." });
-      }
-      await sendCustomerOrderSms(orderRow.id);
-      return res.json({
-        freeOrder: true,
-        orderNumber: orderRow.order_number,
-        paymentStatus: "no_payment_required",
-        customerName,
-        customerEmail,
-        customerPhone,
-        shippingAddress,
-        promoCode: appliedPromoCode || "",
-        discountPercent,
-        subtotal,
-        tax,
-        shippingCost,
-        total
-      });
-    }
-
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
       customer_email: customerEmail,
@@ -1010,6 +988,29 @@ async function reconcilePendingOrders() {
   }
 }
 
+async function cleanupAbandonedPendingOrders() {
+  try {
+    const cutoff = new Date(Date.now() - abandonedOrderCleanupSeconds * 1000).toISOString();
+    const { data, error } = await supabaseAdmin
+      .from("orders")
+      .delete()
+      .eq("status", "pending")
+      .is("paid_at", null)
+      .lt("created_at", cutoff)
+      .select("id");
+
+    if (error) {
+      console.error("Abandoned pending-order cleanup failed:", error.message || error);
+      return;
+    }
+    if (Array.isArray(data) && data.length > 0) {
+      console.log(`Deleted ${data.length} abandoned pending order(s) older than ${abandonedOrderCleanupSeconds} seconds.`);
+    }
+  } catch (error) {
+    console.error("Unexpected abandoned pending-order cleanup error:", error.message || error);
+  }
+}
+
 async function checkOrderPaymentColumns() {
   const { error } = await supabaseAdmin
     .from("orders")
@@ -1035,4 +1036,6 @@ app.listen(PORT, () => {
   setInterval(checkOrderPaymentColumns, 5 * 60 * 1000);
   reconcilePendingOrders();
   setInterval(reconcilePendingOrders, 20 * 1000);
+  cleanupAbandonedPendingOrders();
+  setInterval(cleanupAbandonedPendingOrders, 10 * 1000);
 });
