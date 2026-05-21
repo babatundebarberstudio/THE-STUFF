@@ -1916,12 +1916,27 @@ h2 {
   }
 
   .product-grid {
-    grid-template-columns: 1fr;
-    gap: 14px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
   }
 
   .product-media {
-    padding: 12px 12px 14px;
+    padding: 10px 8px 12px;
+  }
+
+  .product-media h3 {
+    font-size: clamp(0.82rem, 3.2vw, 0.98rem);
+  }
+
+  .product-media .product-price,
+  .product-media .shipping-note {
+    font-size: 0.8rem;
+  }
+
+  .product-media .product-link {
+    padding: 8px 12px;
+    font-size: 0.82rem;
+    margin-top: 10px;
   }
 
   .detail-image-shell {
