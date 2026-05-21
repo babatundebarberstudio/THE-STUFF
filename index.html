@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Noirè</title>
   <link rel="icon" href="/assets/favicon.png?v=2" type="image/png">
   <link rel="shortcut icon" href="/assets/favicon.png?v=2" type="image/png">
@@ -71,24 +71,37 @@
 
   <main>
     <div id="homeView">
-    <section class="hero">
+    <section class="hero hero--memorial">
       <div class="hero-image-wrap">
         <div class="hero-image-frame">
           <img
             class="hero-image"
-            src="assets/noire-hero.png"
-            alt="Noire hair care products"
+            src="assets/noire-hero-memorialday.png?v=2"
+            alt="Noire Memorial Day Sale — 20% off with code MEMORIALDAY"
           >
-        </div>
-      </div>
-      <div class="container hero-content">
-        <div class="hero-copy reveal">
-          <h1>Healthy Hair, Rooted in Care.</h1>
-          <p class="hero-highlight">
-            Moisture. Growth. Strength. Confidence for every curl pattern.
-          </p>
-          <div class="hero-actions">
-            <a class="btn btn-primary" href="#shop-all">Shop Now</a>
+          <div id="memorialCountdown" class="hero-countdown" role="timer" aria-live="polite">
+            <p class="hero-countdown-label">Sale ends in</p>
+            <div class="hero-countdown-units">
+              <div class="hero-countdown-unit">
+                <span id="countdownDays" class="hero-countdown-value">0</span>
+                <span class="hero-countdown-unit-label">Days</span>
+              </div>
+              <div class="hero-countdown-unit">
+                <span id="countdownHours" class="hero-countdown-value">00</span>
+                <span class="hero-countdown-unit-label">Hours</span>
+              </div>
+              <div class="hero-countdown-unit">
+                <span id="countdownMinutes" class="hero-countdown-value">00</span>
+                <span class="hero-countdown-unit-label">Min</span>
+              </div>
+              <div class="hero-countdown-unit">
+                <span id="countdownSeconds" class="hero-countdown-value">00</span>
+                <span class="hero-countdown-unit-label">Sec</span>
+              </div>
+            </div>
+            <div class="hero-countdown-actions">
+              <a class="btn btn-primary" href="#shop-all">Shop Now</a>
+            </div>
           </div>
         </div>
       </div>
@@ -116,10 +129,12 @@
         </p>
         <div class="product-grid">
           <article class="product-card">
+            <div class="product-media">
             <a class="product-top-link" href="#product/noire-bundle-deal">
+              <!-- src="assets/noire-hero.png" -->
               <img
                 class="product-thumb"
-                src="assets/noire-hero.png"
+                src="assets/Product Images/Noire Bundle 1.png"
                 alt="Noire Bundle Deal"
               >
               <h3>Noire Bundle Deal</h3>
@@ -127,12 +142,15 @@
             <p class="product-price">Price: $44.99</p>
             <p class="shipping-note">Shipping: 4-7 business days</p>
             <a class="product-link" href="#product/noire-bundle-deal">View Product</a>
+            </div>
           </article>
           <article class="product-card">
+            <div class="product-media">
             <a class="product-top-link" href="#product/scalp-growth-oil">
+              <!-- src="assets/Scalp Growth Oil Main.png" -->
               <img
                 class="product-thumb"
-                src="assets/Scalp Growth Oil Main.png"
+                src="assets/Product Images/Noire Oil 1.png"
                 alt="Scalp/Growth Oil"
               >
               <h3>Scalp/Growth Oil</h3>
@@ -140,29 +158,31 @@
             <p class="product-price">Price: $9.99</p>
             <p class="shipping-note">Shipping: 4-7 business days</p>
             <a class="product-link" href="#product/scalp-growth-oil">View Product</a>
+            </div>
           </article>
           <article class="product-card">
+            <div class="product-media">
             <a class="product-top-link" href="#product/leave-in-conditioner">
+              <!-- src="assets/Leave in Condtioner Black Main.png" -->
               <img
-                id="leaveInThumb"
                 class="product-thumb"
-                src="assets/Leave in Condtioner Black Main.png"
+                src="assets/Product Images/Noire Leave in 1.png"
                 alt="Hydrating Curl Leave-In Conditioner"
               >
               <h3>Hydrating Curl Leave-In Conditioner</h3>
             </a>
             <p class="product-price">Price: $11.99</p>
             <p class="shipping-note">Shipping: 4-7 business days</p>
-            <button id="leaveInColorToggle" class="variant-toggle" type="button">
-              Color: Black
-            </button>
             <a class="product-link" href="#product/leave-in-conditioner">View Product</a>
+            </div>
           </article>
           <article class="product-card">
+            <div class="product-media">
             <a class="product-top-link" href="#product/curl-refresh-spray">
+              <!-- src="assets/Curl Refresh Spray Main.png" -->
               <img
                 class="product-thumb"
-                src="assets/Curl Refresh Spray Main.png"
+                src="assets/Product Images/Noire Spray 1.png"
                 alt="Curl Refresh Spray"
               >
               <h3>Curl Refresh Spray</h3>
@@ -170,12 +190,15 @@
             <p class="product-price">Price: $15.99</p>
             <p class="shipping-note">Shipping: 4-7 business days</p>
             <a class="product-link" href="#product/curl-refresh-spray">View Product</a>
+            </div>
           </article>
           <article class="product-card">
+            <div class="product-media">
             <a class="product-top-link" href="#product/curl-restore-mask">
+              <!-- src="assets/Curl restore mask Main.png" -->
               <img
                 class="product-thumb"
-                src="assets/Curl restore mask Main.png"
+                src="assets/Product Images/Noire Mask 1.png"
                 alt="Curl Restore Mask"
               >
               <h3>Curl Restore Mask</h3>
@@ -183,6 +206,7 @@
             <p class="product-price">Price: $17.99</p>
             <p class="shipping-note">Shipping: 4-7 business days</p>
             <a class="product-link" href="#product/curl-restore-mask">View Product</a>
+            </div>
           </article>
         </div>
       </div>
@@ -199,49 +223,64 @@
         </p>
         <div class="product-grid shop-grid">
           <article class="product-card">
+            <div class="product-media">
             <a class="product-top-link" href="#product/noire-bundle-deal">
-              <img class="product-thumb" src="assets/noire-hero.png" alt="Noire Bundle Deal">
+              <!-- src="assets/noire-hero.png" -->
+              <img class="product-thumb" src="assets/Product Images/Noire Bundle 1.png" alt="Noire Bundle Deal">
               <h3>Noire Bundle Deal</h3>
             </a>
             <p class="product-price">Price: $44.99</p>
             <p class="shipping-note">Shipping: 4-7 business days</p>
             <a class="product-link" href="#product/noire-bundle-deal">View Product</a>
+            </div>
           </article>
           <article class="product-card">
+            <div class="product-media">
             <a class="product-top-link" href="#product/scalp-growth-oil">
-              <img class="product-thumb" src="assets/Scalp Growth Oil Main.png" alt="Scalp/Growth Oil">
+              <!-- src="assets/Scalp Growth Oil Main.png" -->
+              <img class="product-thumb" src="assets/Product Images/Noire Oil 1.png" alt="Scalp/Growth Oil">
               <h3>Scalp/Growth Oil</h3>
             </a>
             <p class="product-price">Price: $9.99</p>
             <p class="shipping-note">Shipping: 4-7 business days</p>
             <a class="product-link" href="#product/scalp-growth-oil">View Product</a>
+            </div>
           </article>
           <article class="product-card">
+            <div class="product-media">
             <a class="product-top-link" href="#product/leave-in-conditioner">
-              <img class="product-thumb" src="assets/Leave in Condtioner Black Main.png" alt="Hydrating Curl Leave-In Conditioner">
+              <!-- src="assets/Leave in Condtioner Black Main.png" -->
+              <img class="product-thumb" src="assets/Product Images/Noire Leave in 1.png" alt="Hydrating Curl Leave-In Conditioner">
               <h3>Hydrating Curl Leave-In Conditioner</h3>
             </a>
             <p class="product-price">Price: $11.99</p>
             <p class="shipping-note">Shipping: 4-7 business days</p>
             <a class="product-link" href="#product/leave-in-conditioner">View Product</a>
+            </div>
           </article>
           <article class="product-card">
+            <div class="product-media">
             <a class="product-top-link" href="#product/curl-refresh-spray">
-              <img class="product-thumb" src="assets/Curl Refresh Spray Main.png" alt="Curl Refresh Spray">
+              <!-- src="assets/Curl Refresh Spray Main.png" -->
+              <img class="product-thumb" src="assets/Product Images/Noire Spray 1.png" alt="Curl Refresh Spray">
               <h3>Curl Refresh Spray</h3>
             </a>
             <p class="product-price">Price: $15.99</p>
             <p class="shipping-note">Shipping: 4-7 business days</p>
             <a class="product-link" href="#product/curl-refresh-spray">View Product</a>
+            </div>
           </article>
           <article class="product-card">
+            <div class="product-media">
             <a class="product-top-link" href="#product/curl-restore-mask">
-              <img class="product-thumb" src="assets/Curl restore mask Main.png" alt="Curl Restore Mask">
+              <!-- src="assets/Curl restore mask Main.png" -->
+              <img class="product-thumb" src="assets/Product Images/Noire Mask 1.png" alt="Curl Restore Mask">
               <h3>Curl Restore Mask</h3>
             </a>
             <p class="product-price">Price: $17.99</p>
             <p class="shipping-note">Shipping: 4-7 business days</p>
             <a class="product-link" href="#product/curl-restore-mask">View Product</a>
+            </div>
           </article>
         </div>
       </div>
@@ -253,23 +292,19 @@
         <div class="product-detail-card">
           <div class="detail-top-layout">
             <div class="detail-image-viewer">
-              <button id="prevImageButton" class="image-nav-button" type="button" aria-label="Previous product photo">&#8249;</button>
-              <img id="detailImage" class="detail-image" src="" alt="">
-              <button id="nextImageButton" class="image-nav-button" type="button" aria-label="Next product photo">&#8250;</button>
+              <div class="detail-image-shell">
+                <button id="prevImageButton" class="image-nav-button" type="button" aria-label="Previous product photo">&#8249;</button>
+                <div class="detail-image-stage">
+                  <img id="detailImage" class="detail-image" src="" alt="">
+                </div>
+                <button id="nextImageButton" class="image-nav-button" type="button" aria-label="Next product photo">&#8250;</button>
+              </div>
             </div>
 
             <div class="detail-purchase-panel">
               <h2 id="detailName"></h2>
               <p class="detail-price-label">Price: <strong id="detailPrice">$0.00</strong></p>
               <p id="detailShipping" class="shipping-note shipping-detail">Shipping: 4-7 business days</p>
-
-              <div id="colorGroup" class="field-group hidden">
-                <label for="colorSelect">Color</label>
-                <select id="colorSelect">
-                  <option value="Black">Black</option>
-                  <option value="White">White</option>
-                </select>
-              </div>
 
               <div class="field-group">
                 <label for="quantityInput">Quantity</label>
@@ -573,6 +608,40 @@
   <script src="https://js.stripe.com/v3/"></script>
   <script>
     document.getElementById("year").textContent = new Date().getFullYear();
+    const PRODUCT_IMG_DIR = "assets/Product Images/";
+    const productGallery = {
+      bundle: [
+        PRODUCT_IMG_DIR + "Noire Bundle 1.png",
+        PRODUCT_IMG_DIR + "Noire Bundle 2.png",
+        PRODUCT_IMG_DIR + "Noire Bundle 3.png",
+        PRODUCT_IMG_DIR + "Noire Bundle 4.png"
+      ],
+      oil: [
+        PRODUCT_IMG_DIR + "Noire Oil 1.png",
+        PRODUCT_IMG_DIR + "Noire Oil 2.png",
+        PRODUCT_IMG_DIR + "Noire Oil 3.png",
+        PRODUCT_IMG_DIR + "Noire Oil 4.png"
+      ],
+      leaveIn: [
+        PRODUCT_IMG_DIR + "Noire Leave in 1.png",
+        PRODUCT_IMG_DIR + "Noire Leave in 2.png",
+        PRODUCT_IMG_DIR + "Noire Leave in 3.png",
+        PRODUCT_IMG_DIR + "Noire Leave in 4.png"
+      ],
+      spray: [
+        PRODUCT_IMG_DIR + "Noire Spray 1.png",
+        PRODUCT_IMG_DIR + "Noire Spray 2.png",
+        PRODUCT_IMG_DIR + "Noire Spray 3.png",
+        PRODUCT_IMG_DIR + "Noire Spray 4.png"
+      ],
+      mask: [
+        PRODUCT_IMG_DIR + "Noire Mask 1.png",
+        PRODUCT_IMG_DIR + "Noire Mask 2.png",
+        PRODUCT_IMG_DIR + "Noire Mask 3.png",
+        PRODUCT_IMG_DIR + "Noire Mask 4.png"
+      ]
+    };
+
     const products = {
       "noire-bundle-deal": {
         slug: "noire-bundle-deal",
@@ -593,14 +662,15 @@
           { name: "Curl Refresh Spray", benefit: "revives curls and helps reduce frizz between wash days" },
           { name: "Curl Restore Mask", benefit: "provides deep moisture and improves manageability" }
         ],
-        gallery: [
-          "assets/noire-hero.png",
-          "assets/Scalp Growth Oil Main.png",
-          "assets/Leave in Condtioner Black Main.png",
-          "assets/Leave in Conditioner White Main.png",
-          "assets/Curl Refresh Spray Main.png",
-          "assets/Curl restore mask Main.png"
-        ]
+        gallery: productGallery.bundle
+        // gallery: [
+        //   "assets/noire-hero.png",
+        //   "assets/Scalp Growth Oil Main.png",
+        //   "assets/Leave in Condtioner Black Main.png",
+        //   "assets/Leave in Conditioner White Main.png",
+        //   "assets/Curl Refresh Spray Main.png",
+        //   "assets/Curl restore mask Main.png"
+        // ]
       },
       "scalp-growth-oil": {
         slug: "scalp-growth-oil",
@@ -622,10 +692,11 @@
           { name: "Vitamin E Oil", benefit: "acts as an antioxidant to protect scalp and hair" },
           { name: "Rosemary Essential Oil", benefit: "supports circulation and stimulates healthy growth" }
         ],
-        gallery: [
-          "assets/Scalp Growth Oil Main.png",
-          "assets/product-scalp-growth-oil.png"
-        ]
+        gallery: productGallery.oil
+        // gallery: [
+        //   "assets/Scalp Growth Oil Main.png",
+        //   "assets/product-scalp-growth-oil.png"
+        // ]
       },
       "leave-in-conditioner": {
         slug: "leave-in-conditioner",
@@ -661,17 +732,12 @@
           { name: "Rosemary Essential Oil", benefit: "supports a healthy scalp environment" },
           { name: "Optiphen Plus", benefit: "prevents microbial growth and keeps the formula safe" }
         ],
-        colors: ["Black", "White"],
-        galleryByColor: {
-          Black: [
-            "assets/Leave in Condtioner Black Main.png",
-            "assets/product-leave-in-conditioner-black.png"
-          ],
-          White: [
-            "assets/Leave in Conditioner White Main.png",
-            "assets/product-leave-in-conditioner-white.png"
-          ]
-        }
+        gallery: productGallery.leaveIn
+        // colors: ["Black", "White"],
+        // galleryByColor: {
+        //   Black: productGallery.leaveIn,
+        //   White: productGallery.leaveIn
+        // }
       },
       "curl-refresh-spray": {
         slug: "curl-refresh-spray",
@@ -698,10 +764,11 @@
           { name: "Rosemary Essential Oil", benefit: "promotes scalp health" },
           { name: "Optiphen Plus", benefit: "preserves the product and helps prevent bacteria" }
         ],
-        gallery: [
-          "assets/Curl Refresh Spray Main.png",
-          "assets/product-curl-refresh-spray.png"
-        ]
+        gallery: productGallery.spray
+        // gallery: [
+        //   "assets/Curl Refresh Spray Main.png",
+        //   "assets/product-curl-refresh-spray.png"
+        // ]
       },
       "curl-restore-mask": {
         slug: "curl-restore-mask",
@@ -738,15 +805,15 @@
           { name: "Rosemary Essential Oil", benefit: "stimulates and supports scalp health" },
           { name: "Optiphen Plus", benefit: "keeps the formula safe and stable" }
         ],
-        gallery: [
-          "assets/Curl restore mask Main.png",
-          "assets/product-curl-restore-mask.png"
-        ]
+        gallery: productGallery.mask
+        // gallery: [
+        //   "assets/Curl restore mask Main.png",
+        //   "assets/product-curl-restore-mask.png"
+        // ]
       }
     };
 
     let activeProduct = null;
-    let lastLeaveInColor = "Black";
     let activeGallery = [];
     let activeGalleryIndex = 0;
     const CART_STORAGE_KEY = "noire_cart_v1";
@@ -794,12 +861,14 @@
           const p = products[row.slug];
           const name = p ? p.name : String(row.name || "Product");
           const price = p && typeof p.price === "number" ? p.price : row.price;
+          const color =
+            row.slug === "leave-in-conditioner" ? null : row.color || null;
           cart.push({
             slug: row.slug,
             name,
             price,
             quantity: Math.max(1, parseInt(row.quantity, 10) || 1),
-            color: row.color || null
+            color
           });
         });
       } catch (_err) {
@@ -838,11 +907,7 @@
     const detailImage = document.getElementById("detailImage");
     const prevImageButton = document.getElementById("prevImageButton");
     const nextImageButton = document.getElementById("nextImageButton");
-    const colorGroup = document.getElementById("colorGroup");
-    const colorSelect = document.getElementById("colorSelect");
     const quantityInput = document.getElementById("quantityInput");
-    const leaveInThumb = document.getElementById("leaveInThumb");
-    const leaveInColorToggle = document.getElementById("leaveInColorToggle");
 
     const cartButton = document.getElementById("cartButton");
     const cartBadge = document.getElementById("cartBadge");
@@ -1034,12 +1099,8 @@
       });
     }
 
-    function getProductGallery(product, chosenColor) {
-      if (product.galleryByColor) {
-        const color = chosenColor || lastLeaveInColor || product.colors[0];
-        return product.galleryByColor[color];
-      }
-      return product.gallery;
+    function getProductGallery(product) {
+      return product.gallery || [];
     }
 
     function updateActiveDetailImage() {
@@ -1052,12 +1113,6 @@
       if (!activeGallery.length) return;
       activeGalleryIndex = (activeGalleryIndex + direction + activeGallery.length) % activeGallery.length;
       updateActiveDetailImage();
-    }
-
-    function updateLeaveInThumb() {
-      const leaveInProduct = products["leave-in-conditioner"];
-      leaveInThumb.src = leaveInProduct.galleryByColor[lastLeaveInColor][0];
-      leaveInColorToggle.textContent = "Color: " + lastLeaveInColor;
     }
 
     function renderMoney(value) {
@@ -1459,6 +1514,7 @@
 
     async function openAuthModal() {
       authOverlay.classList.remove("hidden");
+      updateScrollLock();
       authMessage.classList.add("hidden");
       authMessage.textContent = "";
       syncAuthDialogMode();
@@ -1472,6 +1528,7 @@
 
     function closeAuthModal() {
       authOverlay.classList.add("hidden");
+      updateScrollLock();
       openAuthForPromoGate = false;
       if (authDialog) authDialog.classList.remove("signed-in");
     }
@@ -1500,15 +1557,24 @@
       }
     }
 
+    function updateScrollLock() {
+      const cartOpen = cartOverlay && !cartOverlay.classList.contains("hidden");
+      const authOpen = authOverlay && !authOverlay.classList.contains("hidden");
+      const zoomOpen = imageZoomOverlay && !imageZoomOverlay.classList.contains("hidden");
+      document.body.classList.toggle("is-scroll-locked", Boolean(cartOpen || authOpen || zoomOpen));
+    }
+
     function openCart() {
       renderAllCartUI();
       cartOverlay.classList.remove("hidden");
       cartDrawer.classList.remove("hidden");
+      updateScrollLock();
     }
 
     function closeCart() {
       cartOverlay.classList.add("hidden");
       cartDrawer.classList.add("hidden");
+      updateScrollLock();
     }
 
     function closeMobileMenu() {
@@ -1541,10 +1607,12 @@
       zoomedImage.src = detailImage.src;
       zoomedImage.alt = detailImage.alt;
       imageZoomOverlay.classList.remove("hidden");
+      updateScrollLock();
     }
 
     function closeImageZoom() {
       imageZoomOverlay.classList.add("hidden");
+      updateScrollLock();
     }
 
     function showProduct(slug) {
@@ -1562,14 +1630,7 @@
         .join("");
       quantityInput.value = "1";
 
-      if (product.colors) {
-        colorSelect.value = lastLeaveInColor;
-        colorGroup.classList.remove("hidden");
-        activeGallery = getProductGallery(product, colorSelect.value);
-      } else {
-        colorGroup.classList.add("hidden");
-        activeGallery = getProductGallery(product, null);
-      }
+      activeGallery = getProductGallery(product);
       activeGalleryIndex = 0;
       updateActiveDetailImage();
       const hasMultiplePhotos = activeGallery.length > 1;
@@ -1957,12 +2018,7 @@
     document.getElementById("addToCartButton").addEventListener("click", () => {
       if (!activeProduct) return;
       const quantity = Math.max(1, parseInt(quantityInput.value, 10) || 1);
-      const color = activeProduct.colors ? colorSelect.value : null;
-      if (activeProduct.slug === "leave-in-conditioner") {
-        lastLeaveInColor = color;
-        updateLeaveInThumb();
-      }
-      const match = cart.find((item) => item.slug === activeProduct.slug && item.color === color);
+      const match = cart.find((item) => item.slug === activeProduct.slug && !item.color);
 
       if (match) {
         match.quantity += quantity;
@@ -1972,7 +2028,7 @@
           name: activeProduct.name,
           price: activeProduct.price,
           quantity,
-          color
+          color: null
         });
       }
 
@@ -2087,21 +2143,6 @@
         printReceipt(latestReceiptDetails);
       });
     }
-    leaveInColorToggle.addEventListener("click", () => {
-      lastLeaveInColor = lastLeaveInColor === "Black" ? "White" : "Black";
-      updateLeaveInThumb();
-    });
-    colorSelect.addEventListener("change", () => {
-      if (!activeProduct || activeProduct.slug !== "leave-in-conditioner") return;
-      lastLeaveInColor = colorSelect.value;
-      activeGallery = getProductGallery(activeProduct, colorSelect.value);
-      activeGalleryIndex = 0;
-      updateActiveDetailImage();
-      const hasMultiplePhotos = activeGallery.length > 1;
-      prevImageButton.classList.toggle("hidden", !hasMultiplePhotos);
-      nextImageButton.classList.toggle("hidden", !hasMultiplePhotos);
-      updateLeaveInThumb();
-    });
     prevImageButton.addEventListener("click", () => moveGalleryImage(-1));
     nextImageButton.addEventListener("click", () => moveGalleryImage(1));
     detailImage.addEventListener("click", openImageZoom);
@@ -2437,6 +2478,54 @@
       }
     });
 
+    function initMemorialCountdown() {
+      const end = new Date(2026, 4, 25, 23, 59, 59, 999);
+      const root = document.getElementById("memorialCountdown");
+      const daysEl = document.getElementById("countdownDays");
+      const hoursEl = document.getElementById("countdownHours");
+      const minutesEl = document.getElementById("countdownMinutes");
+      const secondsEl = document.getElementById("countdownSeconds");
+      if (!root || !daysEl || !hoursEl || !minutesEl || !secondsEl) return;
+
+      const label = root.querySelector(".hero-countdown-label");
+      const pad = (n) => String(n).padStart(2, "0");
+
+      function tick() {
+        const remaining = end.getTime() - Date.now();
+        if (remaining <= 0) {
+          root.classList.add("hero-countdown--ended");
+          if (label) label.textContent = "Memorial Day sale has ended";
+          daysEl.textContent = "0";
+          hoursEl.textContent = "00";
+          minutesEl.textContent = "00";
+          secondsEl.textContent = "00";
+          return false;
+        }
+
+        let diff = remaining;
+        const days = Math.floor(diff / 86400000);
+        diff -= days * 86400000;
+        const hours = Math.floor(diff / 3600000);
+        diff -= hours * 3600000;
+        const minutes = Math.floor(diff / 60000);
+        diff -= minutes * 60000;
+        const seconds = Math.floor(diff / 1000);
+
+        daysEl.textContent = String(days);
+        hoursEl.textContent = pad(hours);
+        minutesEl.textContent = pad(minutes);
+        secondsEl.textContent = pad(seconds);
+        return true;
+      }
+
+      if (!tick()) return;
+      const timer = window.setInterval(() => {
+        if (!tick()) window.clearInterval(timer);
+      }, 1000);
+    }
+
+    initMemorialCountdown();
+
     function setupScrollReveal() {
       const revealObserver = new IntersectionObserver(
         (entries) => {
@@ -2461,7 +2550,6 @@
 
     setTimeout(() => {
       clearIntroState();
-      updateLeaveInThumb();
       setupScrollReveal();
       renderAllCartUI();
       syncViewFromHash();
@@ -2584,10 +2672,8 @@
           if (typeof activeProduct === "undefined" || !activeProduct) return;
           if (typeof cart === "undefined" || !Array.isArray(cart)) return;
           const qtyInput = document.getElementById("quantityInput");
-          const colorSelect = document.getElementById("colorSelect");
           const quantity = Math.max(1, parseInt(qtyInput && qtyInput.value, 10) || 1);
-          const color = activeProduct.colors ? (colorSelect ? colorSelect.value : null) : null;
-          const match = cart.find((item) => item.slug === activeProduct.slug && item.color === color);
+          const match = cart.find((item) => item.slug === activeProduct.slug && !item.color);
           if (match) {
             match.quantity += quantity;
           } else {
@@ -2596,7 +2682,7 @@
               name: activeProduct.name,
               price: activeProduct.price,
               quantity,
-              color
+              color: null
             });
           }
           if (typeof openCart === "function") openCart();
