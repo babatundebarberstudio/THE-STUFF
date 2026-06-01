@@ -71,37 +71,24 @@
 
   <main>
     <div id="homeView">
-    <section class="hero hero--memorial">
+    <section class="hero">
       <div class="hero-image-wrap">
         <div class="hero-image-frame">
           <img
             class="hero-image"
-            src="assets/noire-hero-memorialday.png?v=2"
-            alt="Noire Memorial Day Sale — 20% off with code MEMORIALDAY"
+            src="assets/noire-hero.png"
+            alt="Noire hair care products"
           >
-          <div id="memorialCountdown" class="hero-countdown" role="timer" aria-live="polite">
-            <p class="hero-countdown-label">Sale ends in</p>
-            <div class="hero-countdown-units">
-              <div class="hero-countdown-unit">
-                <span id="countdownDays" class="hero-countdown-value">0</span>
-                <span class="hero-countdown-unit-label">Days</span>
-              </div>
-              <div class="hero-countdown-unit">
-                <span id="countdownHours" class="hero-countdown-value">00</span>
-                <span class="hero-countdown-unit-label">Hours</span>
-              </div>
-              <div class="hero-countdown-unit">
-                <span id="countdownMinutes" class="hero-countdown-value">00</span>
-                <span class="hero-countdown-unit-label">Min</span>
-              </div>
-              <div class="hero-countdown-unit">
-                <span id="countdownSeconds" class="hero-countdown-value">00</span>
-                <span class="hero-countdown-unit-label">Sec</span>
-              </div>
-            </div>
-            <div class="hero-countdown-actions">
-              <a class="btn btn-primary" href="#shop-all">Shop Now</a>
-            </div>
+        </div>
+      </div>
+      <div class="container hero-content">
+        <div class="hero-copy reveal">
+          <h1>Healthy Hair, Rooted in Care.</h1>
+          <p class="hero-highlight">
+            Moisture. Growth. Strength. Confidence for every curl pattern.
+          </p>
+          <div class="hero-actions">
+            <a class="btn btn-primary" href="#shop-all">Shop Now</a>
           </div>
         </div>
       </div>
@@ -2477,54 +2464,6 @@
         closeMobileMenu();
       }
     });
-
-    function initMemorialCountdown() {
-      const end = new Date(2026, 4, 25, 23, 59, 59, 999);
-      const root = document.getElementById("memorialCountdown");
-      const daysEl = document.getElementById("countdownDays");
-      const hoursEl = document.getElementById("countdownHours");
-      const minutesEl = document.getElementById("countdownMinutes");
-      const secondsEl = document.getElementById("countdownSeconds");
-      if (!root || !daysEl || !hoursEl || !minutesEl || !secondsEl) return;
-
-      const label = root.querySelector(".hero-countdown-label");
-      const pad = (n) => String(n).padStart(2, "0");
-
-      function tick() {
-        const remaining = end.getTime() - Date.now();
-        if (remaining <= 0) {
-          root.classList.add("hero-countdown--ended");
-          if (label) label.textContent = "Memorial Day sale has ended";
-          daysEl.textContent = "0";
-          hoursEl.textContent = "00";
-          minutesEl.textContent = "00";
-          secondsEl.textContent = "00";
-          return false;
-        }
-
-        let diff = remaining;
-        const days = Math.floor(diff / 86400000);
-        diff -= days * 86400000;
-        const hours = Math.floor(diff / 3600000);
-        diff -= hours * 3600000;
-        const minutes = Math.floor(diff / 60000);
-        diff -= minutes * 60000;
-        const seconds = Math.floor(diff / 1000);
-
-        daysEl.textContent = String(days);
-        hoursEl.textContent = pad(hours);
-        minutesEl.textContent = pad(minutes);
-        secondsEl.textContent = pad(seconds);
-        return true;
-      }
-
-      if (!tick()) return;
-      const timer = window.setInterval(() => {
-        if (!tick()) window.clearInterval(timer);
-      }, 1000);
-    }
-
-    initMemorialCountdown();
 
     function setupScrollReveal() {
       const revealObserver = new IntersectionObserver(

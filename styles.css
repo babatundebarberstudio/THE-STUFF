@@ -271,88 +271,6 @@ a {
   position: relative;
 }
 
-.hero--memorial .hero-image-wrap {
-  margin-bottom: 24px;
-  padding-left: var(--nav-h-pad);
-  padding-right: var(--nav-h-pad);
-}
-
-.hero--memorial .hero-image-frame {
-  width: min(1320px, 100%);
-  max-width: 100%;
-}
-
-.hero-countdown {
-  margin-top: 20px;
-  padding: 18px 20px 16px;
-  border-radius: 16px;
-  background: var(--surface-sand);
-  border: 1px solid rgba(0, 0, 0, 0.06);
-  text-align: center;
-}
-
-.hero-countdown-label {
-  margin: 0 0 12px;
-  font-size: 0.82rem;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--accent-dark);
-}
-
-.hero-countdown-units {
-  display: flex;
-  justify-content: center;
-  gap: clamp(10px, 3vw, 28px);
-  flex-wrap: wrap;
-}
-
-.hero-countdown-unit {
-  min-width: 64px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-}
-
-.hero-countdown-value {
-  font-size: clamp(1.6rem, 4vw, 2.4rem);
-  font-weight: 800;
-  line-height: 1;
-  color: #111111;
-  font-variant-numeric: tabular-nums;
-}
-
-.hero-countdown-unit-label {
-  font-size: 0.72rem;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--muted);
-}
-
-.hero-countdown--ended .hero-countdown-units {
-  display: none;
-}
-
-.hero-countdown--ended .hero-countdown-label {
-  margin-bottom: 0;
-  font-size: 1rem;
-  letter-spacing: 0.04em;
-  text-transform: none;
-  color: #111111;
-}
-
-.hero-countdown-actions {
-  margin-top: 18px;
-  padding-top: 18px;
-  border-top: 1px solid rgba(0, 0, 0, 0.08);
-}
-
-.hero-countdown-actions .btn {
-  min-width: 168px;
-}
-
 .hero-image {
   display: block;
   width: 100%;
@@ -374,11 +292,6 @@ a {
 .intro-text-hidden #homeView .hero-copy {
   opacity: 0;
   pointer-events: none;
-}
-
-.intro-text-hidden #homeView .hero-countdown {
-  opacity: 0;
-  animation: heroImageFade 2s ease 0.35s forwards;
 }
 
 .reveal {
@@ -1880,39 +1793,8 @@ h2 {
     padding-right: max(12px, env(safe-area-inset-right, 0px));
   }
 
-  .hero--memorial .hero-image-wrap {
-    padding-left: max(10px, env(safe-area-inset-left, 0px));
-    padding-right: max(10px, env(safe-area-inset-right, 0px));
-  }
-
   .hero-image-frame {
-    width: 100%;
-  }
-
-  .hero--memorial .hero-image-frame {
-    width: 100%;
-  }
-
-  .hero-countdown {
-    margin-top: 14px;
-    padding: 14px 10px 12px;
-  }
-
-  .hero-countdown-units {
-    gap: 8px;
-  }
-
-  .hero-countdown-unit {
-    min-width: 46px;
-  }
-
-  .hero-countdown-value {
-    font-size: clamp(1.35rem, 5vw, 1.8rem);
-  }
-
-  .hero-countdown-actions .btn {
-    width: 100%;
-    max-width: none;
+    width: min(420px, 92vw);
   }
 
   .product-grid {
@@ -2000,12 +1882,3 @@ h2 {
   }
 }
 
-@media (max-width: 380px) {
-  .hero-countdown-unit {
-    min-width: 40px;
-  }
-
-  .hero-countdown-unit-label {
-    font-size: 0.65rem;
-  }
-}
